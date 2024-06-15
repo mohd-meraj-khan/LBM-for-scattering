@@ -2,4 +2,8 @@
 A 2D lattice Boltzmann solver for scattering and radiation force calculations
 
 
-[![YouTube](http://i.ytimg.com/vi/FhGPaVxhVTE/hqdefault.jpg)](https://www.youtube.com/watch?v=FhGPaVxhVTE)
+
+
+
+https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/7fa1db52-ca6e-4093-a7e7-6dd50b20105b
+
