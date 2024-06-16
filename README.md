@@ -12,3 +12,7 @@ https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/7fa1db52-
 ![pic 0220](https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/9422ecf2-ffa0-4ab0-b52d-39795335465a)
 
 
+
+
+https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/f5fc7d10-882e-4b12-8934-64a982160383
+
