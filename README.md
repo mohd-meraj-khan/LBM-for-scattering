@@ -1,14 +1,15 @@
 # LBM-for-scattering-of-EM-wave
 
-<h3>A 2D lattice Boltzmann solver for scattering and radiation force calculations</h3>
+## A 2D lattice Boltzmann solver for scattering and radiation force calculations
 
-<p>The solver utilizes the Lattice Boltzmann method (LBM) as described by <a href="https://doi.org/10.1103/PhysRevE.96.063306" target="_blank">Hauser and Verhey</a>. 
-  To optimize performance, the LBM code is implemented in C and interfaced using <b>ctypes</b> to execute within Python. Python was chosen due to its ease of coding and extensive library support. </p>
+The solver utilizes the Lattice Boltzmann method (LBM) as described by [Hauser and Verhey](https://doi.org/10.1103/PhysRevE.96.063306). 
+To optimize performance, the LBM code is implemented in C and interfaced using <b>ctypes</b> to execute within Python. Python was chosen 
+due to its ease of coding and extensive library support.
 
-<p>Currently, the solver is designed to compute scattering width and radiation force for 2D geometries. It performs effectively across all three scattering regimes: Rayleigh, Mie, and geometrical optics. </p>
+Currently, the solver is designed to compute scattering width and radiation force for 2D geometries. It performs effectively across all three scattering regimes: Rayleigh, Mie, and geometrical optics.
 
 
-<h2><i>Scattering width calculation</i></h2>
+### _Scattering width calculation_
 
 Scattering width is a measure of how effectively an object scatters. For two dimensional scatterers it is defined as
 
@@ -18,14 +19,14 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 
 
 
+#### _Conducting cylinder_
+
+
+#### _Dielectric cylinder_
 
 
 
-
-
-<h2><i>Radiation force calculation</i></h2>
-
-
+### _Radiation force calculation_
 
 Radiation force can be computed by integrating Maxwell's stress tensor over the surface of the scatterer.
 
@@ -33,12 +34,18 @@ $$\mathbb{T} = \varepsilon_0 \pmb{\mathcal{E}} \pmb{\mathcal{E}} + \mu_0 \pmb{\m
 
 Here, $\mathbb{T}$ is Maxwell's stress tensor, and $\mathbb{I}$ is the identity tensor.
 
-
-
 The radiation force per unit length on the cylinder averaged over a time period can be computed by integrating average Maxwell's stress tensor over the perimeter of the cylinder
-
 $$\langle {\bf F} \rangle = \oint \langle \mathbb{T} \rangle \cdot  \hat{{\bf n}} dl.$$
 
-
-
 Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder.
+
+
+
+#### _Conducting cylinder_
+
+##### _Smooth circular_
+
+##### _Corrugated elliptic_
+
+
+#### _Dielectric cylinder_
