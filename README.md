@@ -16,3 +16,7 @@ https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/7fa1db52-
 
 https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/f5fc7d10-882e-4b12-8934-64a982160383
 
+
+
+https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/74c967e2-b3f3-4f84-9074-31af64e5b368
+
