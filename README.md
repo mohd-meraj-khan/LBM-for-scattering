@@ -1,6 +1,8 @@
 # LBM-for-scattering-of-EM-wave
 A 2D lattice Boltzmann solver for scattering and radiation force calculations
 
+<p>We usd the Lattice Boltzmann method given by <a href="https://doi.org/10.1103/PhysRevE.96.063306" target="_blank">Winners</a> </p>
+
 
 <h2><i>Scattering width calculation</i></h2>
 
