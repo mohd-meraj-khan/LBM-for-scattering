@@ -1,7 +1,11 @@
 # LBM-for-scattering-of-EM-wave
-A 2D lattice Boltzmann solver for scattering and radiation force calculations
 
-<p>We usd the Lattice Boltzmann method given by <a href="https://doi.org/10.1103/PhysRevE.96.063306" target="_blank">Winners</a> </p>
+<h3>A 2D lattice Boltzmann solver for scattering and radiation force calculations</h3>
+
+<p>The solver utilizes the Lattice Boltzmann method (LBM) as described by <a href="https://doi.org/10.1103/PhysRevE.96.063306" target="_blank">Hauser and Verhey</a>. 
+  To optimize performance, the LBM code is implemented in C and interfaced using <b>ctypes</b> to execute within Python. Python was chosen due to its ease of coding and extensive library support. </p>
+
+<p>Currently, the solver is designed to compute scattering width and radiation force for 2D geometries. It performs effectively across all three scattering regimes: Rayleigh, Mie, and geometrical optics. </p>
 
 
 <h2><i>Scattering width calculation</i></h2>
