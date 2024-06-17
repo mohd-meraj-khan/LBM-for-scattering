@@ -49,3 +49,32 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 
 
 #### _Dielectric cylinder_
+
+
+
+
+
+
+
+https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/97e00a97-a9b5-4946-8ff9-95362c6d3ef5
+
+
+
+
+
+
+https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/50ba4aed-5b85-46cf-b4e4-5827ca65818f
+
+
+
+
+
+
+https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/56dc300e-422f-4ac4-b635-2bb6ea705f3e
+
+
+
+
+
+
+
