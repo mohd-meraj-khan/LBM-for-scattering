@@ -22,6 +22,9 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 #### _Conducting cylinder_
 
 
+![Alt text](https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/PEC_Es_2D_2_column.svg)
+
+
 #### _Dielectric cylinder_
 
 
