@@ -1,4 +1,4 @@
-# LBM-for-scattering-of-EM-wave
+# LBM for scattering of EM wave (sequential)
 
 ## A 2D lattice Boltzmann solver for scattering and radiation force calculations
 
