@@ -19,7 +19,7 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 
 
 
-#### _Conducting cylinder_
+#### _Conducting cylinder (smooth circular)_
 
 
 
@@ -32,9 +32,9 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 
 
 
-#### _Dielectric cylinder_
+#### _Dielectric cylinder (smooth circular)_
 
-
+### $\varepsilon_r = 2$
 
 
 <p align="center">
@@ -45,7 +45,7 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
   <em>Figure 1:</em>
 </p>
 
-
+### $a/ \lambda = 0.5$
 
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/MRCS_ratio_0.5.svg" style="display: inline-block;">
@@ -106,7 +106,7 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 </p>
 
 
-#### _Dielectric cylinder_
+#### _Dielectric cylinder (smooth circular)_
 
 
 <p align="center">
