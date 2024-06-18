@@ -27,8 +27,13 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/PEC_Es_2D_2_column.svg" style="display: inline-block;">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/raw/main/Media/RCS_PEC.svg" style="display: inline-block;">
   <br>
-  <em>Figure 1:</em>
+  <em>Figure 1: Scattred electric field on left and bistatic (outset) and monostatic (inset) scattering width on right of the smooth circular conducting cylinder.
+      Solid lines represents the analytical solutions whereas dashed lines and markers represents the LBM solutions.</em>
 </p>
+
+
+
+
 
 
 
@@ -42,16 +47,17 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/RCS_Mie_er_2.0.svg" style="display: inline-block;">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/RCS_GO_er_2.0.svg" style="display: inline-block;">
   <br>
-  <em>Figure 1:</em>
+  <em>Figure 2: Bistatic (outset) and monostatic (inset) scattering width of the smooth circular dielectric cylinder for the Rayleugh, Mie and geometric optics regimes.
+  Same legends as in Fig. 1.</em>
 </p>
 
 ### $a/ \lambda = 0.5$
 
 <p align="center">
-    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/MRCS_ratio_0.5.svg" style="display: inline-block;">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/BRCS_ratio_0.5.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/MRCS_ratio_0.5.svg" style="display: inline-block;">
   <br>
-  <em>Figure 1:</em>
+  <em>Figure 3: Bistatic and monostatic scattering width of the smooth circular dielectric cylinder.</em>
 </p>
 
 
@@ -85,7 +91,7 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxPEC.svg" style="display: inline-block;">
   <br>
-  <em>Figure 1:</em>
+  <em>Figure 4: Normalized radiation force on smooth circular conducting cylinder.</em>
 </p>
 
 
@@ -95,14 +101,14 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/corrugatedSnap.svg" style="display: inline-block;">
   <br>
-  <em>Figure 1:</em>
+  <em>Figure 5: Total magnetic field due to corrugated conducting elliptical cylinders of different aspect ratios.</em>
 </p>
 
 
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/corrugatedPEC.svg" style="display: inline-block;">
   <br>
-  <em>Figure 1:</em>
+  <em>Figure 6: Normalized radiation force for the cylinders shown in Fig. 5.</em>
 </p>
 
 
