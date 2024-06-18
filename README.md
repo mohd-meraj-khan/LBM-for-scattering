@@ -22,10 +22,37 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 #### _Conducting cylinder_
 
 
-![Alt text](https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/PEC_Es_2D_2_column.svg)
+
+<p align="center">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/PEC_Es_2D_2_column.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/raw/main/Media/RCS_PEC.svg" style="display: inline-block;">
+  <br>
+  <em>Figure 1:</em>
+</p>
+
 
 
 #### _Dielectric cylinder_
+
+
+
+
+<p align="center">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/RCS_Rayleigh_er_2.0.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/RCS_Mie_er_2.0.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/RCS_GO_er_2.0.svg" style="display: inline-block;">
+  <br>
+  <em>Figure 1:</em>
+</p>
+
+
+
+<p align="center">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/MRCS_ratio_0.5.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/BRCS_ratio_0.5.svg" style="display: inline-block;">
+  <br>
+  <em>Figure 1:</em>
+</p>
 
 
 
@@ -46,14 +73,50 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 
 #### _Conducting cylinder_
 
+
+
+
+
+
+
 ##### _Smooth circular_
 
+
+<p align="center">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxPEC.svg" style="display: inline-block;">
+  <br>
+  <em>Figure 1:</em>
+</p>
+
+
 ##### _Corrugated elliptic_
+
+
+<p align="center">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/corrugatedSnap.svg" style="display: inline-block;">
+  <br>
+  <em>Figure 1:</em>
+</p>
+
+
+<p align="center">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/corrugatedPEC.svg" style="display: inline-block;">
+  <br>
+  <em>Figure 1:</em>
+</p>
 
 
 #### _Dielectric cylinder_
 
 
+<p align="center">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxRayleigh.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxMie.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxGO.svg" style="display: inline-block;">
+    <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxExactLog.svg" style="display: inline-block;">
+  <br>
+  <em>Figure 1:</em>
+</p>
 
 
 ### $$\varepsilon_r = 4, a/ \lambda = 0.91$$
