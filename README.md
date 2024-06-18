@@ -91,7 +91,7 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxPEC.svg" style="display: inline-block;">
   <br>
-  <em>Figure 4: Normalized radiation force on smooth circular conducting cylinder.</em>
+  <em>Figure 4: Normalized radiation force on smooth circular conducting cylinder, Rayleigh regime (inset) and Mie and geometric optics regimes (outset).</em>
 </p>
 
 
@@ -121,7 +121,7 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxGO.svg" style="display: inline-block;">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/FxExactLog.svg" style="display: inline-block;">
   <br>
-  <em>Figure 1:</em>
+  <em>Figure 7: Normalized radiation force on smooth circular dielectric cylinder.</em>
 </p>
 
 
