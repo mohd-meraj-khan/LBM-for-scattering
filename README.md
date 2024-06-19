@@ -25,6 +25,8 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 #### _Conducting cylinder (smooth circular)_
 
 
+The left side of Fig. 1 depicts the scattered electric field from the smooth circular conducting cylinder, while the right side shows bistatic (outer) and monostatic (inner) scattering widths for various $a / \lambda$ values across all three scattering regimes. In the right figure, solid lines represent analytical solutions, while dashed lines and markers denote LBM solutions.
+
 
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/PEC_Es_2D_2_column.svg" style="display: inline-block;">
@@ -42,7 +44,12 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 
 #### _Dielectric cylinder (smooth circular)_
 
-### $\varepsilon_r = 2$
+For the smooth circular dielectric cylinders we do two cases (1) fixing the dielectric constant $\varepsilon_r$ and vary the $a / \lambda$ values and (2) fixing the $a / \lambda$ value and vary the dielectric constant $\varepsilon_r$ values.
+
+ ### $\varepsilon_r = 2$
+
+Here we fix the value of dielectric constant $\varepsilon_r$ and vary the $a / \lambda$ values to cover all three scattering regimes. We take the same set of $a / \lambda$ values as in Fig. 1.
+
 
 
 <p align="center">
@@ -55,6 +62,9 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 </p>
 
 ### $a/ \lambda = 0.5$
+
+Here we fix the $a / \lambda$ value and vary the dielectric constant values. For perfect conductor, the value of dielectric constant is infinty. Therefore by increasing the value of dielectric constant the solution approaches the solution of conducting cylinder.
+
 
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/BRCS_ratio_0.5.svg" style="display: inline-block;">
@@ -84,11 +94,9 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 
 
 
-
-
-
-
 ##### _Smooth circular_
+
+Below we show the comparison of the radiation force on smooth circular conducting as a function of $a / \lambda$. We take the values of $a / \lambda$ from $0.02$ to $4$ to cover all three scattering regimes. The outset of the figure shows the Mie and geometrical optics regimes whereas the inset is Rayleigh regime.
 
 
 <p align="center">
@@ -101,21 +109,29 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 ##### _Corrugated elliptic_
 
 
+To assess the suitability of LBM for analyzing complex geometries, we refer to the work by [F. G. Mitri](https://doi.org/10.1364/OSAC.2.000298) , where the author employed the modal expansion method to compute the radiation force per unit length acting on corrugated and smooth elliptical conducting cylinders. Here, we have reproduce the radiation force calculations for corrugated cylinders using LBM.
+
+Fig. 5 shows the total (incident + scattered) magnetic field for the corrugated elliptical conducting cylinders of different aspect ratios $'A'$.
+
+
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/corrugatedSnap.svg" style="display: inline-block;">
   <br>
   <em>Figure 5: Total magnetic field due to corrugated conducting elliptical cylinders of different aspect ratios.</em>
 </p>
 
+Fig. 6 shows the comparison of the LBM solution with the semi-analytical solutions of the radiation force for the corrugated elliptical conducting cylinders shown in Fig. 5.
 
 <p align="center">
     <img src="https://github.com/mohd-meraj-khan/LBM-for-scattering/blob/main/Media/corrugatedPEC.svg" style="display: inline-block;">
   <br>
-  <em>Figure 6: Normalized radiation force for the cylinders shown in Fig. 5.</em>
+  <em>Figure 6: Normalized radiation force for the cylinders shown in Fig. 5. Solid lines represent semi-analytical solution whereas the markers represents the LBM solutions</em>
 </p>
 
 
 #### _Dielectric cylinder (smooth circular)_
+
+Radiation force on smooth circular dielectric cylinder is a complex curve
 
 
 <p align="center">
