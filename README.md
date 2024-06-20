@@ -44,12 +44,12 @@ The left side of Fig. 1 depicts the scattered electric field from the smooth cir
 
 #### _Dielectric cylinder (smooth circular)_
 
-For the smooth circular dielectric cylinders we do two cases (1) fixing the dielectric constant $\varepsilon_r$ and vary the $a / \lambda$ values and (2) fixing the $a / \lambda$ value and vary the dielectric constant $\varepsilon_r$ values.
 
+We analyze smooth circular dielectric cylinders in two scenarios: (1) fixing the dielectric constant $\varepsilon_r$​ and varying the $a / \lambda$ values, and (2) fixing the $a / \lambda$ value and varying the dielectric constant $\varepsilon_r$​​ values.
  ### $\varepsilon_r = 2$
 
-Here we fix the value of dielectric constant $\varepsilon_r$ and vary the $a / \lambda$ values to cover all three scattering regimes. We take the same set of $a / \lambda$ values as in Fig. 1.
 
+Here, we maintain a constant dielectric constant $\varepsilon_r$​ and vary the $a / \lambda$ values to encompass all three scattering regimes. The $a / \lambda$ values used are identical to those shown in Fig. 1
 
 
 <p align="center">
@@ -63,7 +63,8 @@ Here we fix the value of dielectric constant $\varepsilon_r$ and vary the $a / \
 
 ### $a/ \lambda = 0.5$
 
-Here we fix the $a / \lambda$ value and vary the dielectric constant values. For perfect conductor, the value of dielectric constant is infinty. Therefore by increasing the value of dielectric constant the solution approaches the solution of conducting cylinder.
+
+Here, we keep the $a / \lambda$ value fixed and vary the dielectric constant. In the case of a perfect conductor, the dielectric constant is infinite. As we increase the dielectric constant, the solution approaches that of a conducting cylinder.
 
 
 <p align="center">
@@ -96,7 +97,7 @@ Here, $\hat{{\bf n}}$ is the unit normal vector at the perimeter of the cylinder
 
 ##### _Smooth circular_
 
-Below we show the comparison of the radiation force on smooth circular conducting as a function of $a / \lambda$. We take the values of $a / \lambda$ from $0.02$ to $4$ to cover all three scattering regimes. The outset of the figure shows the Mie and geometrical optics regimes whereas the inset is Rayleigh regime.
+Here, we present a comparison of the radiation force on smooth circular conducting cylinders as a function of $a / \lambda$. We consider $a / \lambda$ values ranging from 0.02 to 4, encompassing all three scattering regimes. The main figure illustrates the Mie and geometrical optics regimes, while the inset represents the Rayleigh regime.
 
 
 <p align="center">
@@ -131,7 +132,8 @@ Fig. 6 shows the comparison of the LBM solution with the semi-analytical solutio
 
 #### _Dielectric cylinder (smooth circular)_
 
-Radiation force on smooth circular dielectric cylinder is a complex curve
+Here, we analyze the radiation force on smooth circular dielectric cylinders as a function of $a / \lambda$ for various dielectric constants, covering all three scattering regimes from $a / \lambda = 0.02$ to $a / \lambda = 2.6$. For clarity we have taken small window for each scattering regimes, the first three figures of Fig. 7. 
+
 
 
 <p align="center">
@@ -142,6 +144,11 @@ Radiation force on smooth circular dielectric cylinder is a complex curve
   <br>
   <em>Figure 7: Normalized radiation force on smooth circular dielectric cylinder.</em>
 </p>
+
+
+The sharp peaks in the above figure are called the resonance peaks where the amplitude of the fields are very high. Below we see three videos of total electric fields, where $a / \lambda = 0.95$ correspods to resonance peak. For all three videos, all the conditions are same except the value of $a / \lambda$. For all three cases, the amplitude of incident wave is 1. 
+
+The sharp peaks observed in the above figure are resonance peaks, characterized by significantly high field amplitudes. Below, we present three videos displaying the total electric fields, with $a / \lambda = 0.95$ corresponding to a resonance peak. All conditions in three videos are identical, except for the value of $a / \lambda$, which varies across the three cases. In each video, the incident wave has an amplitude of 1.
 
 
 ### $$\varepsilon_r = 4, a/ \lambda = 0.91$$
