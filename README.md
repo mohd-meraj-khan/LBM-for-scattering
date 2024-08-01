@@ -2,7 +2,11 @@
 
 ## A 2D lattice Boltzmann solver for scattering and radiation force calculations
 
-The solver utilizes the Lattice Boltzmann method (LBM) as described by [Hauser and Verhey](https://doi.org/10.1103/PhysRevE.96.063306). 
+
+Scattering of the electromagnetic (EM) wave is a fundamental phenomenon in physics and refers to the re-radiation of the incident wave due to interactions with a particle or object. Scattering of EM waves has applications in several fields, such as remote sensing, weather monitoring, radar-based rainfall rate estimation, medical science, and material science, to name a few. The standard numerical methods to solve the scattered field from an arbitrarily shaped scatterer are the finite difference time domain method (FDTD), finite element method (FEM) and discrete dipole approximation method (DDA). The Lattice Boltzmann method (LBM) was developed as an efficient and stable alternative to conventional numerical methods for fluid dynamics simulations and is suitable for simulating flow through complicated geometries, such as flow through porous media, as the LBM does not need to trace the interfaces between different phases. Due to the simplicity of the lattice Boltzmann equation, LBM is naturally adapted to parallel computing. Other than fluid dynamics, LBM has also found applications in diverse simulating phenomena, including multi-component fluid flows, heat transfer, acoustics, magnetohydrodynamics and electrodynamics.
+
+
+The solver utilizes the LBM as described by [Hauser and Verhey](https://doi.org/10.1103/PhysRevE.96.063306). 
 To optimize performance, the LBM code is implemented in C and interfaced using <b>ctypes</b> to execute within Python. Python was chosen 
 due to its ease of coding and extensive library support.
 
@@ -25,7 +29,7 @@ Here, $\sigma$ is the scattering width, $\pmb{ \mathcal{E}}^S$ and $\pmb{ \mathc
 #### _Conducting cylinder (smooth circular)_
 
 
-The left side of Fig. 1 depicts the scattered electric field from the smooth circular conducting cylinder, while the right side shows bistatic (outer) and monostatic (inner) scattering widths for various $a / \lambda$ values across all three scattering regimes. In the right figure, solid lines represent analytical solutions, while dashed lines and markers denote LBM solutions.
+The left side of Fig. 1 depicts the scattered electric field from the smooth circular conducting cylinder, while the right side shows bistatic (outset) and monostatic (inset) scattering widths for various $a / \lambda$ values across all three scattering regimes. In the right figure, solid lines represent analytical solutions, while dashed lines and markers denote LBM solutions.
 
 
 <p align="center">
