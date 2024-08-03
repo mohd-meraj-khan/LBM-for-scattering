@@ -6,11 +6,12 @@ import sys
 import os
 import time
 
-from ModuleTraction import tractionFx, tractionFy, tractionFz
-from ModuleSourceOfEmWave import planeWaveTM
-import ModuleGeometry
+from Module_Traction import tractionFx, tractionFy, tractionFz
+from Module_EM_Wave import planeWaveTM
+import Module_Geometry
 
 
+t0 = time.time()
 
 
 directory = 'data'
@@ -29,17 +30,16 @@ parameters = sys.argv
 
 a, ratio = 25, 0.95   # ratio = a / wavelength
 n = 4
-Nx, Ny, Nz = n*a, n*a, 1  # size of the computational domain
+Nx, Ny = n*a, n*a  # size of the computational domain
 
 er1, mur1, er2, er3 = 1, 1, 4, 5   # material properties i.e. permittivity and permeabilty
 
 
 #############################
 # boundary of EM wave source
-xmin = 0
-xmax = 0 + 1
+xloc = 0
 ymin = 0
-ymax = Ny + 1 
+ymax = Ny
 #############################
 
 
@@ -63,7 +63,7 @@ noOfReflections = 30
 
 Time = 3 * (Nx * np.sqrt(er1) + noOfReflections * 2 * a * np.sqrt(er2)) + noOfPeriods * period
 
-print(Time)
+print("Number of time steps :", int(Time))
 
 
 
@@ -73,30 +73,30 @@ print(Time)
 ###############################################################################################################
 
 # initializing the electric and magnetic fields
-def initialize_field(Nz=1, Ny=10, Nx=10):
-    return np.zeros((Nz, Ny, Nx), dtype=np.float32, order='C')
+def initialize_field(Ny=10, Nx=10):
+    return np.zeros((Ny, Nx), dtype=np.float32, order='C')
 
-Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc = [initialize_field(Nz, Ny, Nx) for _ in range(6)]
-Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot = [initialize_field(Nz, Ny, Nx) for _ in range(6)]
-Ex_scat, Ey_scat, Ez_scat, Hx_scat, Hy_scat, Hz_scat = [initialize_field(Nz, Ny, Nx) for _ in range(6)]
+Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc = [initialize_field(Ny, Nx) for _ in range(6)]
+Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot = [initialize_field(Ny, Nx) for _ in range(6)]
+Ex_scat, Ey_scat, Ez_scat, Hx_scat, Hy_scat, Hz_scat = [initialize_field(Ny, Nx) for _ in range(6)]
 
 
 # initializing the distribution functions of electric and magnetic fields
-def initilize_dis_func(Nz=1, Ny=10, Nx=10, Q=7):
-    return np.zeros((Nz, Ny, Nx, Q), dtype=np.float32, order='C')
+def initilize_dis_func(Ny=10, Nx=10, Q=7):
+    return np.zeros((Ny, Nx, Q), dtype=np.float32, order='C')
 
-ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc = [initilize_dis_func(Nz, Ny, Nx, Q) for _ in range(6)]
-ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot = [initilize_dis_func(Nz, Ny, Nx, Q) for _ in range(6)]
+ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
+ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
 
 
 # initilizing the domain properties
-def initialize_material_properties(er1=1, mur1=1, Nz=1, Ny=10, Nx=10):
-    yield np.ones((Nz, Ny, Nx), dtype=np.float32, order='C') * er1
-    yield np.ones((Nz, Ny, Nx), dtype=np.float32, order='C') * mur1
+def initialize_material_properties(er1=1, mur1=1, Ny=10, Nx=10):
+    yield np.ones((Ny, Nx), dtype=np.float32, order='C') * er1
+    yield np.ones((Ny, Nx), dtype=np.float32, order='C') * mur1
     return
 
-er_inc, mur_inc = initialize_material_properties(er1, mur1, Nz, Ny, Nx)
-er_tot, mur_tot = initialize_material_properties(er1, mur1, Nz, Ny, Nx)
+er_inc, mur_inc = initialize_material_properties(er1, mur1, Ny, Nx)
+er_tot, mur_tot = initialize_material_properties(er1, mur1, Ny, Nx)
 ###############################################################################################################
 
 
@@ -124,22 +124,23 @@ y = np.arange(0, Ny, 1)
 ###                        SCATTERER                        ####
 ################################################################
 
-a = a
 
 # initilizing the polar coordinates
-r, phi1 = [initialize_field(Nz, Ny, Nx) for _ in range(2)]
+r, phi = [initialize_field(Ny, Nx) for _ in range(2)]
 
 # center of the scatterer
 cx = Nx//2 + 0.5
 cy = Ny//2 + 0.5
 
 # converting to polar coordinates
-ModuleGeometry.carToPolar(r, phi, Nz, Ny, Nx, cy1, cx1)
+ModuleGeometry.carToPolar(r, phi, Ny, Nx, cy, cx)
 
 # scatterer particle
-ModuleGeometry.circle(r, phi, er_tot, er2, a1, Nz, Ny, Nx)
+scatterer = ModuleGeometry.circle(r, a, Ny, Nx)
 
-# coordinates where traction vector is being calculated
+er_tot[scatterer] = er2
+
+# coordinates where RCS is being calculated
 R = np.array([2, 3, 4, 5])*a
 
 X_polar1 = R[0] * np.cos(theta*np.pi/180) + Nx//2 + 0.5
@@ -170,25 +171,28 @@ path = os.getcwd()
 myclib = CDLL(os.path.join(path, "LBM_Sequential.so"))
 
 # defining 3D and 4D pointers (LBM runs in C, for that pointer is needed)
+P2D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=2, flags="C")
 P3D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=3, flags="C")
-P4D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=4, flags="C")
 
 # calculation of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.macroField.argtypes = [P4D, P3D, P3D, c_int, c_int, c_int, c_int]
+myclib.macroField.argtypes = [P3D, P2D, P2D, c_int, c_int, c_int]
 myclib.macroField.restype  = None
 
 # initilization of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.initializeField.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, c_int, c_int, c_int]
+myclib.initializeField.argtypes = [P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int]
 myclib.initializeField.restype  = None
 
-# collision + streaming (FUNCTION PROTOTYPE)
-myclib.collStream.argtypes = [P4D, P4D, P4D, P4D, P4D, P4D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, c_int, c_int, c_int, c_int]
+# collision and streaming (FUNCTION PROTOTYPE)
+myclib.collStream.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int]
 myclib.collStream.restype  = None
 
-myclib.collStreamForcingNode.argtypes = [P4D, P4D, P4D, P4D, P4D, P4D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, c_int, c_int, c_int, c_int, c_int, c_int, c_int, c_int]
+myclib.collStreamForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int, c_int, c_int, c_int]
 myclib.collStreamForcingNode.restype  = None
 
 ###############################################################################################################
+
+
+t1 = time.time()
 
 
 
@@ -200,7 +204,7 @@ Ez_scat_interp4 = []
 
 for t in range(int(Time)):
 
-    t1 = time.time()
+    
 
 
 
@@ -209,36 +213,35 @@ for t in range(int(Time)):
     #################################################################################################################
 
     # initialization of macroscopic fields
-    myclib.initializeField(Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, Nz, Ny, Nx)
-    myclib.initializeField(Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, Nz, Ny, Nx)
+    myclib.initializeField(Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, Ny, Nx)
+    myclib.initializeField(Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, Ny, Nx)
 
     # computation of macroscopic fields from distribution function
-    myclib.macroField(ex_inc, er_inc, Ex_inc, Nz, Ny, Nx, Q)
-    myclib.macroField(ey_inc, er_inc, Ey_inc, Nz, Ny, Nx, Q)
-    myclib.macroField(ez_inc, er_inc, Ez_inc, Nz, Ny, Nx, Q)
+    myclib.macroField(ex_inc, er_inc, Ex_inc, Ny, Nx, Q)
+    myclib.macroField(ey_inc, er_inc, Ey_inc, Ny, Nx, Q)
+    myclib.macroField(ez_inc, er_inc, Ez_inc, Ny, Nx, Q)
 
-    myclib.macroField(hx_inc, mur_inc, Hx_inc, Nz, Ny, Nx, Q)
-    myclib.macroField(hy_inc, mur_inc, Hy_inc, Nz, Ny, Nx, Q)
-    myclib.macroField(hz_inc, mur_inc, Hz_inc, Nz, Ny, Nx, Q)
-
-
-    myclib.macroField(ex_tot, er_tot, Ex_tot, Nz, Ny, Nx, Q)
-    myclib.macroField(ey_tot, er_tot, Ey_tot, Nz, Ny, Nx, Q)
-    myclib.macroField(ez_tot, er_tot, Ez_tot, Nz, Ny, Nx, Q)
-
-    myclib.macroField(hx_tot, mur_tot, Hx_tot, Nz, Ny, Nx, Q)
-    myclib.macroField(hy_tot, mur_tot, Hy_tot, Nz, Ny, Nx, Q)
-    myclib.macroField(hz_tot, mur_tot, Hz_tot, Nz, Ny, Nx, Q)
+    myclib.macroField(hx_inc, mur_inc, Hx_inc, Ny, Nx, Q)
+    myclib.macroField(hy_inc, mur_inc, Hy_inc, Ny, Nx, Q)
+    myclib.macroField(hz_inc, mur_inc, Hz_inc, Ny, Nx, Q)
 
 
+    myclib.macroField(ex_tot, er_tot, Ex_tot, Ny, Nx, Q)
+    myclib.macroField(ey_tot, er_tot, Ey_tot, Ny, Nx, Q)
+    myclib.macroField(ez_tot, er_tot, Ez_tot, Ny, Nx, Q)
+
+    myclib.macroField(hx_tot, mur_tot, Hx_tot, Ny, Nx, Q)
+    myclib.macroField(hy_tot, mur_tot, Hy_tot, Ny, Nx, Q)
+    myclib.macroField(hz_tot, mur_tot, Hz_tot, Ny, Nx, Q)
 
 
-    # plane wave enforcement at the left boundary of the domain
+
+
     if (t >= 0):
         
         # source wave
-        planeWaveTM(Ez_inc, Hy_inc, t, omega, xmin, xmax, ymin, ymax)
-        planeWaveTM(Ez_tot, Hy_tot, t, omega, xmin, xmax, ymin, ymax)
+        planeWaveTM(Ez_inc, Hy_inc, t, omega, xloc, ymin, ymax)
+        planeWaveTM(Ez_tot, Hy_tot, t, omega, xloc, ymin, ymax)
 
         # calculation of scattered fields
         Ez_scat = Ez_tot - Ez_inc
@@ -247,8 +250,8 @@ for t in range(int(Time)):
 
 
         # collision and streaming (the 2 steps of LBM) when field is forced
-        myclib.collStreamForcingNode(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Nz, Ny, Nx, Q, xmin, xmax, ymin, ymax)
-        myclib.collStreamForcingNode(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Nz, Ny, Nx, Q, xmin, xmax, ymin, ymax)
+        myclib.collStreamForcingNode(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.collStreamForcingNode(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q, xloc, ymin, ymax)
 
     else:
 
@@ -259,8 +262,8 @@ for t in range(int(Time)):
 
         
         # collision and streaming (the 2 steps of LBM) when field is not forced
-        myclib.collStream(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Nz, Ny, Nx, Q)
-        myclib.collStream(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Nz, Ny, Nx, Q)
+        myclib.collStream(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q)
+        myclib.collStream(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q)
         
     ###############################################################################################################
 
@@ -272,18 +275,11 @@ for t in range(int(Time)):
     if (t >= int(Time) - 5*int(np.round(period))):
 
         ###############################################################################################################
-        ############################### Most time consuming part, 2/3rd of total time #################################
         
         # interpolating the field values
-        Ez_scat_spline = RectBivariateSpline(x, y, Ez_scat[0])
+        Ez_scat_spline = RectBivariateSpline(x, y, Ez_scat)
 
 
-        ###############################################################################################################
-        ###############################################################################################################
-
-        
-        ###############################################################################################################
-        ################################### This portion takes negligible time ########################################
 
         # interpolated values of fields at a circle of radius R
         Ez_scat_interp1.append(Ez_scat_spline.ev(Y_polar1, X_polar1))
@@ -292,17 +288,21 @@ for t in range(int(Time)):
         Ez_scat_interp4.append(Ez_scat_spline.ev(Y_polar4, X_polar4))
 
         ###############################################################################################################
-        ###############################################################################################################
 
 
-    if (t == 10):
-        t2 = time.time()
-        print('Approximate time of computation in minutes :', int((t2 - t1)*Time/60))
-    
+###############################################################################################################   
+    t2 = time.time()
+        
+    if (t > 0 and t%100 == 0):
+        remaining_time = (t2 - t1) * (int(Time) - t) / (t*60)
+        print(f"Approximate time left: {remaining_time:.2f} minutes", end="\r")
+
+t3 = time.time()
+total_time = (t3 - t0) / 60
+print(f"\nTotal time taken: {total_time:.2f} minutes")
+###############################################################################################################
 
 
-    
-##############################################################
 
 EzScat1 = open(directory+"/Ez_scat1.txt", "w")
 np.savetxt(EzScat1, Ez_scat_interp1, fmt='%.4e')

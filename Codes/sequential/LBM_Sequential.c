@@ -14,16 +14,14 @@ int V[21] = {0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1};
 // calculates the macroscopic fields from the distribution functions
 
 
-void macroField(float* dis_func, float* mat_prop, float* field, int z, int y, int x, int q) {
+void macroField(float* dis_func, float* mat_prop, float* field, int y, int x, int q) {
 	
-	int i, j, k, l;
+	int i, j, k;
 	
-	for(i = 0; i < z; i++) {
-		for(j = 0; j < y; j++) {
-			for(k = 0; k < x; k++) {
-				for(l = 0; l < q; l++) {
-					field[i*y*x + j*x + k] += dis_func[i*y*x*q + j*x*q + k*q + l] / mat_prop[i*y*x + j*x + k];
-				}
+	for(i = 0; i < y; i++) {
+		for(j = 0; j < x; j++) {
+			for(k = 0; k < q; k++) {
+				field[i*x + j] += dis_func[i*x*q + j*q + k] / mat_prop[i*x + j];
 			}
 		}
 	}
@@ -39,19 +37,19 @@ void macroField(float* dis_func, float* mat_prop, float* field, int z, int y, in
 // inintialize the macroscopic field
 
 
-void initializeField(float* Ex, float* Ey, float* Ez, float* Hx, float* Hy, float* Hz, int z, int y, int x) {
+void initializeField(float* Ex, float* Ey, float* Ez, float* Hx, float* Hy, float* Hz, int y, int x) {
 	
-	for(int i = 0; i < z; i++){
-		for(int j = 0; j < y; j++){
-			for(int k = 0; k < x; k++){				
-				Ex[i*y*x + j*x + k] = 0;
-				Ey[i*y*x + j*x + k] = 0;
-				Ez[i*y*x + j*x + k] = 0;
-				
-				Hx[i*y*x + j*x + k] = 0;
-				Hy[i*y*x + j*x + k] = 0;
-				Hz[i*y*x + j*x + k] = 0;
-			}
+	int i, j;
+	
+	for(i = 0; i < y; i++){
+		for(j = 0; j < x; j++){				
+			Ex[i*x + j] = 0;
+			Ey[i*x + j] = 0;
+			Ez[i*x + j] = 0;
+			
+			Hx[i*x + j] = 0;
+			Hy[i*x + j] = 0;
+			Hz[i*x + j] = 0;
 		}
 	}
 }
@@ -70,145 +68,142 @@ void initializeField(float* Ex, float* Ey, float* Ez, float* Hx, float* Hy, floa
 /*---------------------------------------------------------------------------------------------------------------------*/
 
 
-void collStreamForcingNode(float* ex, float* ey, float* ez, float* hx, float* hy, float* hz, float* Ex, float* Ey, float* Ez, float* Hx, float* Hy, float* Hz, float* er, float* mur, int z, int y, int x, int q, int xmin, int xmax, int ymin, int ymax) {
+void collStreamForcingNode(float* ex, float* ey, float* ez, float* hx, float* hy, float* hz, float* Ex, float* Ey, float* Ez, float* Hx, float* Hy, float* Hz, float* er, float* mur, int y, int x, int q, int xloc, int ymin, int ymax) {
 
-	int i=0, j=0, k=0;
+	int i, j;
 	
 	
+	for (i = 0; i < y; i++) {
+		for (j = 0; j < x; j++) {
+		
+			int j1 = x-1-j, j11 = j1-1;
+			int j21 = j+1;
+			int i3 = y-1-i, i31 = i3-1;
+			int i41 = i+1;
 
-	for (i = 0; i < z; i++) {
-		for (j = 0; j < y; j++) {
-			for (k = 0; k < x; k++) {
+			if (j1 == 0)
+				j11 = j1;
+			if (j == x-1)
+				j21 = j;
+			if (i3 == 0)
+				i31 = i3;
+			if (i == y-1)
+				i41 = i;
 			
-				int k1 = x-1-k, k11 = k1-1;
-				int k21 = k+1;
-				int j3 = y-1-j, j31 = j3-1;
-				int j41 = j+1;
+			if (i >= ymin && i < ymax && j == xloc) { // no collision at the forcing node
 
-				if (k1 == 0)
-					k11 = k1;
-				if (k == x-1)
-					k21 = k;
-				if (j3 == 0)
-					j31 = j3;
-				if (j == y-1)
-					j41 = j;
+				ex[i*x*q + j*q  + 0] = ((er[i*x + j] - 1) * Ex[i*x + j]);	
+				ex[i*x*q + j1*q + 1] = W * (Ex[i*x + j11] - V[1*3 + 1] * Hz[i*x + j11] + V[1*3 + 2] * Hy[i*x + j11]);
+				ex[i*x*q + j*q  + 2] = W * (Ex[i*x + j21] - V[2*3 + 1] * Hz[i*x + j21] + V[2*3 + 2] * Hy[i*x + j21]);
+				ex[i3*x*q + j*q + 3] = W * (Ex[i31*x + j] - V[3*3 + 1] * Hz[i31*x + j] + V[3*3 + 2] * Hy[i31*x + j]);
+				ex[i*x*q + j*q  + 4] = W * (Ex[i41*x + j] - V[4*3 + 1] * Hz[i41*x + j] + V[4*3 + 2] * Hy[i41*x + j]);
+				ex[i*x*q + j*q  + 5] = W * (Ex[i*x   + j] - V[5*3 + 1] * Hz[i*x   + j] + V[5*3 + 2] * Hy[i*x   + j]);
+				ex[i*x*q + j*q  + 6] = W * (Ex[i*x   + j] - V[6*3 + 1] * Hz[i*x   + j] + V[6*3 + 2] * Hy[i*x   + j]);
 				
-				if (j >= ymin && j <= ymax && k >= xmin && k <= xmax) { // no collision, only streaming at the forcing nodes
-
-					ex[i*y*x*q + j*x*q + k*q  + 0] = ((er[i*y*x + j*x + k] - 1) * Ex[i*y*x + j*x + k]);	
-					ex[i*y*x*q + j*x*q + k1*q + 1] = W * (Ex[i*y*x + j*x + k11] - V[1*3 + 1] * Hz[i*y*x + j*x + k11] + V[1*3 + 2] * Hy[i*y*x + j*x + k11]);
-					ex[i*y*x*q + j*x*q + k*q  + 2] = W * (Ex[i*y*x + j*x + k21] - V[2*3 + 1] * Hz[i*y*x + j*x + k21] + V[2*3 + 2] * Hy[i*y*x + j*x + k21]);
-					ex[i*y*x*q + j3*x*q + k*q + 3] = W * (Ex[i*y*x + j31*x + k] - V[3*3 + 1] * Hz[i*y*x + j31*x + k] + V[3*3 + 2] * Hy[i*y*x + j31*x + k]);
-					ex[i*y*x*q + j*x*q + k*q  + 4] = W * (Ex[i*y*x + j41*x + k] - V[4*3 + 1] * Hz[i*y*x + j41*x + k] + V[4*3 + 2] * Hy[i*y*x + j41*x + k]);
-					ex[i*y*x*q + j*x*q + k*q  + 5] = W * (Ex[i*y*x + j*x   + k] - V[5*3 + 1] * Hz[i*y*x + j*x   + k] + V[5*3 + 2] * Hy[i*y*x + j*x   + k]);
-					ex[i*y*x*q + j*x*q + k*q  + 6] = W * (Ex[i*y*x + j*x   + k] - V[6*3 + 1] * Hz[i*y*x + j*x   + k] + V[6*3 + 2] * Hy[i*y*x + j*x   + k]);
-					
-					
-					ey[i*y*x*q + j*x*q + k*q  + 0] = ((er[i*y*x + j*x + k] - 1) * Ey[i*y*x + j*x + k]);
-					ey[i*y*x*q + j*x*q + k1*q + 1] = W * (Ey[i*y*x + j*x + k11] - V[1*3 + 2] * Hx[i*y*x + j*x + k11] + V[1*3 + 0] * Hz[i*y*x + j*x + k11]);
-					ey[i*y*x*q + j*x*q + k*q  + 2] = W * (Ey[i*y*x + j*x + k21] - V[2*3 + 2] * Hx[i*y*x + j*x + k21] + V[2*3 + 0] * Hz[i*y*x + j*x + k21]);
-					ey[i*y*x*q + j3*x*q + k*q + 3] = W * (Ey[i*y*x + j31*x + k] - V[3*3 + 2] * Hx[i*y*x + j31*x + k] + V[3*3 + 0] * Hz[i*y*x + j31*x + k]);
-					ey[i*y*x*q + j*x*q + k*q  + 4] = W * (Ey[i*y*x + j41*x + k] - V[4*3 + 2] * Hx[i*y*x + j41*x + k] + V[4*3 + 0] * Hz[i*y*x + j41*x + k]);
-					ey[i*y*x*q + j*x*q + k*q  + 5] = W * (Ey[i*y*x + j*x   + k] - V[5*3 + 2] * Hx[i*y*x + j*x   + k] + V[5*3 + 0] * Hz[i*y*x + j*x   + k]);
-					ey[i*y*x*q + j*x*q + k*q  + 6] = W * (Ey[i*y*x + j*x   + k] - V[6*3 + 2] * Hx[i*y*x + j*x   + k] + V[6*3 + 0] * Hz[i*y*x + j*x   + k]);
-
-
-					ez[i*y*x*q + j*x*q + k*q  + 0] = ((er[i*y*x + j*x + k] - 1) * Ez[i*y*x + j*x + k]);
-					ez[i*y*x*q + j*x*q + k1*q + 1] = W * (Ez[i*y*x + j*x + k11] - V[1*3 + 0] * Hy[i*y*x + j*x + k11] + V[1*3 + 1] * Hx[i*y*x + j*x + k11]);
-					ez[i*y*x*q + j*x*q + k*q  + 2] = W * (Ez[i*y*x + j*x + k21] - V[2*3 + 0] * Hy[i*y*x + j*x + k21] + V[2*3 + 1] * Hx[i*y*x + j*x + k21]);
-					ez[i*y*x*q + j3*x*q + k*q + 3] = W * (Ez[i*y*x + j31*x + k] - V[3*3 + 0] * Hy[i*y*x + j31*x + k] + V[3*3 + 1] * Hx[i*y*x + j31*x + k]);
-					ez[i*y*x*q + j*x*q + k*q  + 4] = W * (Ez[i*y*x + j41*x + k] - V[4*3 + 0] * Hy[i*y*x + j41*x + k] + V[4*3 + 1] * Hx[i*y*x + j41*x + k]);
-					ez[i*y*x*q + j*x*q + k*q  + 5] = W * (Ez[i*y*x + j*x + k]   - V[5*3 + 0] * Hy[i*y*x + j*x   + k] + V[5*3 + 1] * Hx[i*y*x + j*x   + k]);
-					ez[i*y*x*q + j*x*q + k*q  + 6] = W * (Ez[i*y*x + j*x + k]   - V[6*3 + 0] * Hy[i*y*x + j*x   + k] + V[6*3 + 1] * Hx[i*y*x + j*x   + k]);
-
-
-
-					hx[i*y*x*q + j*x*q + k*q  + 0] = ((mur[i*y*x + j*x + k] - 1) * Hx[i*y*x + j*x + k]);
-					hx[i*y*x*q + j*x*q + k1*q + 1] = W * (Hx[i*y*x + j*x + k11] - V[1*3 + 2] * Ey[i*y*x + j*x + k11] + V[1*3 + 1] * Ez[i*y*x + j*x + k11]);
-					hx[i*y*x*q + j*x*q + k*q  + 2] = W * (Hx[i*y*x + j*x + k21] - V[2*3 + 2] * Ey[i*y*x + j*x + k21] + V[2*3 + 1] * Ez[i*y*x + j*x + k21]);
-					hx[i*y*x*q + j3*x*q + k*q + 3] = W * (Hx[i*y*x + j31*x + k] - V[3*3 + 2] * Ey[i*y*x + j31*x + k] + V[3*3 + 1] * Ez[i*y*x + j31*x + k]);
-					hx[i*y*x*q + j*x*q + k*q  + 4] = W * (Hx[i*y*x + j41*x + k] - V[4*3 + 2] * Ey[i*y*x + j41*x + k] + V[4*3 + 1] * Ez[i*y*x + j41*x + k]);
-					hx[i*y*x*q + j*x*q + k*q  + 5] = W * (Hx[i*y*x + j*x   + k] - V[5*3 + 2] * Ey[i*y*x + j*x   + k] + V[5*3 + 1] * Ez[i*y*x + j*x   + k]);
-					hx[i*y*x*q + j*x*q + k*q  + 6] = W * (Hx[i*y*x + j*x   + k] - V[6*3 + 2] * Ey[i*y*x + j*x   + k] + V[6*3 + 1] * Ez[i*y*x + j*x   + k]);
-					
-					
 				
-					hy[i*y*x*q + j*x*q + k*q  + 0] = ((mur[i*y*x + j*x + k] - 1) * Hy[i*y*x + j*x + k]);
-					hy[i*y*x*q + j*x*q + k1*q + 1] = W * (Hy[i*y*x + j*x + k11] - V[1*3 + 0] * Ez[i*y*x + j*x + k11] + V[1*3 + 2] * Ex[i*y*x + j*x + k11]);
-					hy[i*y*x*q + j*x*q + k*q  + 2] = W * (Hy[i*y*x + j*x + k21] - V[2*3 + 0] * Ez[i*y*x + j*x + k21] + V[2*3 + 2] * Ex[i*y*x + j*x + k21]);
-					hy[i*y*x*q + j3*x*q + k*q + 3] = W * (Hy[i*y*x + j31*x + k] - V[3*3 + 0] * Ez[i*y*x + j31*x + k] + V[3*3 + 2] * Ex[i*y*x + j31*x + k]);
-					hy[i*y*x*q + j*x*q + k*q  + 4] = W * (Hy[i*y*x + j41*x + k] - V[4*3 + 0] * Ez[i*y*x + j41*x + k] + V[4*3 + 2] * Ex[i*y*x + j41*x + k]);
-					hy[i*y*x*q + j*x*q + k*q  + 5] = W * (Hy[i*y*x + j*x   + k] - V[5*3 + 0] * Ez[i*y*x + j*x   + k] + V[5*3 + 2] * Ex[i*y*x + j*x   + k]);
-					hy[i*y*x*q + j*x*q + k*q  + 6] = W * (Hy[i*y*x + j*x   + k] - V[6*3 + 0] * Ez[i*y*x + j*x   + k] + V[6*3 + 2] * Ex[i*y*x + j*x   + k]);
+				ey[i*x*q + j*q  + 0] = ((er[i*x + j] - 1) * Ey[i*x + j]);
+				ey[i*x*q + j1*q + 1] = W * (Ey[i*x + j11] - V[1*3 + 2] * Hx[i*x + j11] + V[1*3 + 0] * Hz[i*x + j11]);
+				ey[i*x*q + j*q  + 2] = W * (Ey[i*x + j21] - V[2*3 + 2] * Hx[i*x + j21] + V[2*3 + 0] * Hz[i*x + j21]);
+				ey[i3*x*q + j*q + 3] = W * (Ey[i31*x + j] - V[3*3 + 2] * Hx[i31*x + j] + V[3*3 + 0] * Hz[i31*x + j]);
+				ey[i*x*q + j*q  + 4] = W * (Ey[i41*x + j] - V[4*3 + 2] * Hx[i41*x + j] + V[4*3 + 0] * Hz[i41*x + j]);
+				ey[i*x*q + j*q  + 5] = W * (Ey[i*x   + j] - V[5*3 + 2] * Hx[i*x   + j] + V[5*3 + 0] * Hz[i*x   + j]);
+				ey[i*x*q + j*q  + 6] = W * (Ey[i*x   + j] - V[6*3 + 2] * Hx[i*x   + j] + V[6*3 + 0] * Hz[i*x   + j]);
 
 
-					hz[i*y*x*q + j*x*q + k*q  + 0] = ((mur[i*y*x + j*x + k] - 1) * Hz[i*y*x + j*x + k]);
-					hz[i*y*x*q + j*x*q + k1*q + 1] = W * (Hz[i*y*x + j*x + k11] - V[1*3 + 1] * Ex[i*y*x + j*x + k11] + V[1*3 + 0] * Ey[i*y*x + j*x + k11]);
-					hz[i*y*x*q + j*x*q + k*q  + 2] = W * (Hz[i*y*x + j*x + k21] - V[2*3 + 1] * Ex[i*y*x + j*x + k21] + V[2*3 + 0] * Ey[i*y*x + j*x + k21]);
-					hz[i*y*x*q + j3*x*q + k*q + 3] = W * (Hz[i*y*x + j31*x + k] - V[3*3 + 1] * Ex[i*y*x + j31*x + k] + V[3*3 + 0] * Ey[i*y*x + j31*x + k]);
-					hz[i*y*x*q + j*x*q + k*q  + 4] = W * (Hz[i*y*x + j41*x + k] - V[4*3 + 1] * Ex[i*y*x + j41*x + k] + V[4*3 + 0] * Ey[i*y*x + j41*x + k]);
-					hz[i*y*x*q + j*x*q + k*q  + 5] = W * (Hz[i*y*x + j*x   + k] - V[5*3 + 1] * Ex[i*y*x + j*x   + k] + V[5*3 + 0] * Ey[i*y*x + j*x   + k]);
-					hz[i*y*x*q + j*x*q + k*q  + 6] = W * (Hz[i*y*x + j*x   + k] - V[6*3 + 1] * Ex[i*y*x + j*x   + k] + V[6*3 + 0] * Ey[i*y*x + j*x   + k]);
-				}
+				ez[i*x*q + j*q  + 0] = ((er[i*x + j] - 1) * Ez[i*x + j]);
+				ez[i*x*q + j1*q + 1] = W * (Ez[i*x + j11] - V[1*3 + 0] * Hy[i*x + j11] + V[1*3 + 1] * Hx[i*x + j11]);
+				ez[i*x*q + j*q  + 2] = W * (Ez[i*x + j21] - V[2*3 + 0] * Hy[i*x + j21] + V[2*3 + 1] * Hx[i*x + j21]);
+				ez[i3*x*q + j*q + 3] = W * (Ez[i31*x + j] - V[3*3 + 0] * Hy[i31*x + j] + V[3*3 + 1] * Hx[i31*x + j]);
+				ez[i*x*q + j*q  + 4] = W * (Ez[i41*x + j] - V[4*3 + 0] * Hy[i41*x + j] + V[4*3 + 1] * Hx[i41*x + j]);
+				ez[i*x*q + j*q  + 5] = W * (Ez[i*x + j]   - V[5*3 + 0] * Hy[i*x   + j] + V[5*3 + 1] * Hx[i*x   + j]);
+				ez[i*x*q + j*q  + 6] = W * (Ez[i*x + j]   - V[6*3 + 0] * Hy[i*x   + j] + V[6*3 + 1] * Hx[i*x   + j]);
+
+
+
+				hx[i*x*q + j*q  + 0] = ((mur[i*x + j] - 1) * Hx[i*x + j]);
+				hx[i*x*q + j1*q + 1] = W * (Hx[i*x + j11] - V[1*3 + 2] * Ey[i*x + j11] + V[1*3 + 1] * Ez[i*x + j11]);
+				hx[i*x*q + j*q  + 2] = W * (Hx[i*x + j21] - V[2*3 + 2] * Ey[i*x + j21] + V[2*3 + 1] * Ez[i*x + j21]);
+				hx[i3*x*q + j*q + 3] = W * (Hx[i31*x + j] - V[3*3 + 2] * Ey[i31*x + j] + V[3*3 + 1] * Ez[i31*x + j]);
+				hx[i*x*q + j*q  + 4] = W * (Hx[i41*x + j] - V[4*3 + 2] * Ey[i41*x + j] + V[4*3 + 1] * Ez[i41*x + j]);
+				hx[i*x*q + j*q  + 5] = W * (Hx[i*x   + j] - V[5*3 + 2] * Ey[i*x   + j] + V[5*3 + 1] * Ez[i*x   + j]);
+				hx[i*x*q + j*q  + 6] = W * (Hx[i*x   + j] - V[6*3 + 2] * Ey[i*x   + j] + V[6*3 + 1] * Ez[i*x   + j]);
 				
-								
 				
-				else {
-					
-					ex[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((er[i*y*x + j*x + k] - 1) * Ex[i*y*x + j*x + k]) - ex[i*y*x*q + j*x*q + k*q + 0];
-					ex[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Ex[i*y*x + j*x + k11] - V[1*3 + 1] * Hz[i*y*x + j*x + k11] + V[1*3 + 2] * Hy[i*y*x + j*x + k11]) - ex[i*y*x*q + j*x*q + k11*q + 1];
-					ex[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Ex[i*y*x + j*x + k21] - V[2*3 + 1] * Hz[i*y*x + j*x + k21] + V[2*3 + 2] * Hy[i*y*x + j*x + k21]) - ex[i*y*x*q + j*x*q + k21*q + 2];
-					ex[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Ex[i*y*x + j31*x + k] - V[3*3 + 1] * Hz[i*y*x + j31*x + k] + V[3*3 + 2] * Hy[i*y*x + j31*x + k]) - ex[i*y*x*q + j31*x*q + k*q + 3];
-					ex[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Ex[i*y*x + j41*x + k] - V[4*3 + 1] * Hz[i*y*x + j41*x + k] + V[4*3 + 2] * Hy[i*y*x + j41*x + k]) - ex[i*y*x*q + j41*x*q + k*q + 4];
-					ex[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Ex[i*y*x + j*x   + k] - V[5*3 + 1] * Hz[i*y*x + j*x   + k] + V[5*3 + 2] * Hy[i*y*x + j*x   + k]) - ex[i*y*x*q + j*x*q + k*q   + 5];
-					ex[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Ex[i*y*x + j*x   + k] - V[6*3 + 1] * Hz[i*y*x + j*x   + k] + V[6*3 + 2] * Hy[i*y*x + j*x   + k]) - ex[i*y*x*q + j*x*q + k*q   + 6];
-					
-					
-					ey[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((er[i*y*x + j*x + k] - 1) * Ey[i*y*x + j*x + k]) - ey[i*y*x*q + j*x*q + k*q + 0];
-					ey[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Ey[i*y*x + j*x + k11] - V[1*3 + 2] * Hx[i*y*x + j*x + k11] + V[1*3 + 0] * Hz[i*y*x + j*x + k11]) - ey[i*y*x*q + j*x*q + k11*q + 1];
-					ey[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Ey[i*y*x + j*x + k21] - V[2*3 + 2] * Hx[i*y*x + j*x + k21] + V[2*3 + 0] * Hz[i*y*x + j*x + k21]) - ey[i*y*x*q + j*x*q + k21*q + 2];
-					ey[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Ey[i*y*x + j31*x + k] - V[3*3 + 2] * Hx[i*y*x + j31*x + k] + V[3*3 + 0] * Hz[i*y*x + j31*x + k]) - ey[i*y*x*q + j31*x*q + k*q + 3];
-					ey[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Ey[i*y*x + j41*x + k] - V[4*3 + 2] * Hx[i*y*x + j41*x + k] + V[4*3 + 0] * Hz[i*y*x + j41*x + k]) - ey[i*y*x*q + j41*x*q + k*q + 4];
-					ey[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Ey[i*y*x + j*x   + k] - V[5*3 + 2] * Hx[i*y*x + j*x   + k] + V[5*3 + 0] * Hz[i*y*x + j*x   + k]) - ey[i*y*x*q + j*x*q + k*q   + 5];
-					ey[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Ey[i*y*x + j*x   + k] - V[6*3 + 2] * Hx[i*y*x + j*x   + k] + V[6*3 + 0] * Hz[i*y*x + j*x   + k]) - ey[i*y*x*q + j*x*q + k*q   + 6];
+			
+				hy[i*x*q + j*q  + 0] = ((mur[i*x + j] - 1) * Hy[i*x + j]);
+				hy[i*x*q + j1*q + 1] = W * (Hy[i*x + j11] - V[1*3 + 0] * Ez[i*x + j11] + V[1*3 + 2] * Ex[i*x + j11]);
+				hy[i*x*q + j*q  + 2] = W * (Hy[i*x + j21] - V[2*3 + 0] * Ez[i*x + j21] + V[2*3 + 2] * Ex[i*x + j21]);
+				hy[i3*x*q + j*q + 3] = W * (Hy[i31*x + j] - V[3*3 + 0] * Ez[i31*x + j] + V[3*3 + 2] * Ex[i31*x + j]);
+				hy[i*x*q + j*q  + 4] = W * (Hy[i41*x + j] - V[4*3 + 0] * Ez[i41*x + j] + V[4*3 + 2] * Ex[i41*x + j]);
+				hy[i*x*q + j*q  + 5] = W * (Hy[i*x   + j] - V[5*3 + 0] * Ez[i*x   + j] + V[5*3 + 2] * Ex[i*x   + j]);
+				hy[i*x*q + j*q  + 6] = W * (Hy[i*x   + j] - V[6*3 + 0] * Ez[i*x   + j] + V[6*3 + 2] * Ex[i*x   + j]);
 
 
-					ez[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((er[i*y*x + j*x + k] - 1) * Ez[i*y*x + j*x + k]) - ez[i*y*x*q + j*x*q + k*q + 0];
-					ez[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Ez[i*y*x + j*x + k11] - V[1*3 + 0] * Hy[i*y*x + j*x + k11] + V[1*3 + 1] * Hx[i*y*x + j*x + k11]) - ez[i*y*x*q + j*x*q + k11*q + 1];
-					ez[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Ez[i*y*x + j*x + k21] - V[2*3 + 0] * Hy[i*y*x + j*x + k21] + V[2*3 + 1] * Hx[i*y*x + j*x + k21]) - ez[i*y*x*q + j*x*q + k21*q + 2];
-					ez[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Ez[i*y*x + j31*x + k] - V[3*3 + 0] * Hy[i*y*x + j31*x + k] + V[3*3 + 1] * Hx[i*y*x + j31*x + k]) - ez[i*y*x*q + j31*x*q + k*q + 3];
-					ez[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Ez[i*y*x + j41*x + k] - V[4*3 + 0] * Hy[i*y*x + j41*x + k] + V[4*3 + 1] * Hx[i*y*x + j41*x + k]) - ez[i*y*x*q + j41*x*q + k*q + 4];
-					ez[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Ez[i*y*x + j*x   + k] - V[5*3 + 0] * Hy[i*y*x + j*x   + k] + V[5*3 + 1] * Hx[i*y*x + j*x   + k]) - ez[i*y*x*q + j*x*q + k*q   + 5];
-					ez[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Ez[i*y*x + j*x   + k] - V[6*3 + 0] * Hy[i*y*x + j*x   + k] + V[6*3 + 1] * Hx[i*y*x + j*x   + k]) - ez[i*y*x*q + j*x*q + k*q   + 6];
+				hz[i*x*q + j*q  + 0] = ((mur[i*x + j] - 1) * Hz[i*x + j]);
+				hz[i*x*q + j1*q + 1] = W * (Hz[i*x + j11] - V[1*3 + 1] * Ex[i*x + j11] + V[1*3 + 0] * Ey[i*x + j11]);
+				hz[i*x*q + j*q  + 2] = W * (Hz[i*x + j21] - V[2*3 + 1] * Ex[i*x + j21] + V[2*3 + 0] * Ey[i*x + j21]);
+				hz[i3*x*q + j*q + 3] = W * (Hz[i31*x + j] - V[3*3 + 1] * Ex[i31*x + j] + V[3*3 + 0] * Ey[i31*x + j]);
+				hz[i*x*q + j*q  + 4] = W * (Hz[i41*x + j] - V[4*3 + 1] * Ex[i41*x + j] + V[4*3 + 0] * Ey[i41*x + j]);
+				hz[i*x*q + j*q  + 5] = W * (Hz[i*x   + j] - V[5*3 + 1] * Ex[i*x   + j] + V[5*3 + 0] * Ey[i*x   + j]);
+				hz[i*x*q + j*q  + 6] = W * (Hz[i*x   + j] - V[6*3 + 1] * Ex[i*x   + j] + V[6*3 + 0] * Ey[i*x   + j]);
+			}
+			
+							
+			
+			else {
+				
+				ex[i*x*q + j*q  + 0] = 2 * ((er[i*x + j] - 1) * Ex[i*x + j]) - ex[i*x*q + j*q + 0];
+				ex[i*x*q + j1*q + 1] = 2 * W * (Ex[i*x + j11] - V[1*3 + 1] * Hz[i*x + j11] + V[1*3 + 2] * Hy[i*x + j11]) - ex[i*x*q + j11*q + 1];
+				ex[i*x*q + j*q  + 2] = 2 * W * (Ex[i*x + j21] - V[2*3 + 1] * Hz[i*x + j21] + V[2*3 + 2] * Hy[i*x + j21]) - ex[i*x*q + j21*q + 2];
+				ex[i3*x*q + j*q + 3] = 2 * W * (Ex[i31*x + j] - V[3*3 + 1] * Hz[i31*x + j] + V[3*3 + 2] * Hy[i31*x + j]) - ex[i31*x*q + j*q + 3];
+				ex[i*x*q + j*q  + 4] = 2 * W * (Ex[i41*x + j] - V[4*3 + 1] * Hz[i41*x + j] + V[4*3 + 2] * Hy[i41*x + j]) - ex[i41*x*q + j*q + 4];
+				ex[i*x*q + j*q  + 5] = 2 * W * (Ex[i*x   + j] - V[5*3 + 1] * Hz[i*x   + j] + V[5*3 + 2] * Hy[i*x   + j]) - ex[i*x*q + j*q   + 5];
+				ex[i*x*q + j*q  + 6] = 2 * W * (Ex[i*x   + j] - V[6*3 + 1] * Hz[i*x   + j] + V[6*3 + 2] * Hy[i*x   + j]) - ex[i*x*q + j*q   + 6];
+				
+				
+				ey[i*x*q + j*q  + 0] = 2 * ((er[i*x + j] - 1) * Ey[i*x + j]) - ey[i*x*q + j*q + 0];
+				ey[i*x*q + j1*q + 1] = 2 * W * (Ey[i*x + j11] - V[1*3 + 2] * Hx[i*x + j11] + V[1*3 + 0] * Hz[i*x + j11]) - ey[i*x*q + j11*q + 1];
+				ey[i*x*q + j*q  + 2] = 2 * W * (Ey[i*x + j21] - V[2*3 + 2] * Hx[i*x + j21] + V[2*3 + 0] * Hz[i*x + j21]) - ey[i*x*q + j21*q + 2];
+				ey[i3*x*q + j*q + 3] = 2 * W * (Ey[i31*x + j] - V[3*3 + 2] * Hx[i31*x + j] + V[3*3 + 0] * Hz[i31*x + j]) - ey[i31*x*q + j*q + 3];
+				ey[i*x*q + j*q  + 4] = 2 * W * (Ey[i41*x + j] - V[4*3 + 2] * Hx[i41*x + j] + V[4*3 + 0] * Hz[i41*x + j]) - ey[i41*x*q + j*q + 4];
+				ey[i*x*q + j*q  + 5] = 2 * W * (Ey[i*x   + j] - V[5*3 + 2] * Hx[i*x   + j] + V[5*3 + 0] * Hz[i*x   + j]) - ey[i*x*q + j*q   + 5];
+				ey[i*x*q + j*q  + 6] = 2 * W * (Ey[i*x   + j] - V[6*3 + 2] * Hx[i*x   + j] + V[6*3 + 0] * Hz[i*x   + j]) - ey[i*x*q + j*q   + 6];
 
 
-					hx[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((mur[i*y*x + j*x + k] - 1) * Hx[i*y*x + j*x + k]) - hx[i*y*x*q + j*x*q + k*q + 0];
-					hx[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Hx[i*y*x + j*x + k11] - V[1*3 + 2] * Ey[i*y*x + j*x + k11] + V[1*3 + 1] * Ez[i*y*x + j*x + k11]) - hx[i*y*x*q + j*x*q + k11*q + 1];
-					hx[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Hx[i*y*x + j*x + k21] - V[2*3 + 2] * Ey[i*y*x + j*x + k21] + V[2*3 + 1] * Ez[i*y*x + j*x + k21]) - hx[i*y*x*q + j*x*q + k21*q + 2];
-					hx[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Hx[i*y*x + j31*x + k] - V[3*3 + 2] * Ey[i*y*x + j31*x + k] + V[3*3 + 1] * Ez[i*y*x + j31*x + k]) - hx[i*y*x*q + j31*x*q + k*q + 3];
-					hx[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Hx[i*y*x + j41*x + k] - V[4*3 + 2] * Ey[i*y*x + j41*x + k] + V[4*3 + 1] * Ez[i*y*x + j41*x + k]) - hx[i*y*x*q + j41*x*q + k*q + 4];
-					hx[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Hx[i*y*x + j*x   + k] - V[5*3 + 2] * Ey[i*y*x + j*x   + k] + V[5*3 + 1] * Ez[i*y*x + j*x   + k]) - hx[i*y*x*q + j*x*q + k*q   + 5];
-					hx[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Hx[i*y*x + j*x   + k] - V[6*3 + 2] * Ey[i*y*x + j*x   + k] + V[6*3 + 1] * Ez[i*y*x + j*x   + k]) - hx[i*y*x*q + j*x*q + k*q   + 6];
-					
-					
-					hy[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((mur[i*y*x + j*x + k] - 1) * Hy[i*y*x + j*x + k]) - hy[i*y*x*q + j*x*q + k*q + 0];
-					hy[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Hy[i*y*x + j*x + k11] - V[1*3 + 0] * Ez[i*y*x + j*x + k11] + V[1*3 + 2] * Ex[i*y*x + j*x + k11]) - hy[i*y*x*q + j*x*q + k11*q + 1];
-					hy[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Hy[i*y*x + j*x + k21] - V[2*3 + 0] * Ez[i*y*x + j*x + k21] + V[2*3 + 2] * Ex[i*y*x + j*x + k21]) - hy[i*y*x*q + j*x*q + k21*q + 2];
-					hy[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Hy[i*y*x + j31*x + k] - V[3*3 + 0] * Ez[i*y*x + j31*x + k] + V[3*3 + 2] * Ex[i*y*x + j31*x + k]) - hy[i*y*x*q + j31*x*q + k*q + 3];
-					hy[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Hy[i*y*x + j41*x + k] - V[4*3 + 0] * Ez[i*y*x + j41*x + k] + V[4*3 + 2] * Ex[i*y*x + j41*x + k]) - hy[i*y*x*q + j41*x*q + k*q + 4];
-					hy[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Hy[i*y*x + j*x   + k] - V[5*3 + 0] * Ez[i*y*x + j*x   + k] + V[5*3 + 2] * Ex[i*y*x + j*x   + k]) - hy[i*y*x*q + j*x*q + k*q   + 5];
-					hy[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Hy[i*y*x + j*x   + k] - V[6*3 + 0] * Ez[i*y*x + j*x   + k] + V[6*3 + 2] * Ex[i*y*x + j*x   + k]) - hy[i*y*x*q + j*x*q + k*q   + 6];
+				ez[i*x*q + j*q  + 0] = 2 * ((er[i*x + j] - 1) * Ez[i*x + j]) - ez[i*x*q + j*q + 0];
+				ez[i*x*q + j1*q + 1] = 2 * W * (Ez[i*x + j11] - V[1*3 + 0] * Hy[i*x + j11] + V[1*3 + 1] * Hx[i*x + j11]) - ez[i*x*q + j11*q + 1];
+				ez[i*x*q + j*q  + 2] = 2 * W * (Ez[i*x + j21] - V[2*3 + 0] * Hy[i*x + j21] + V[2*3 + 1] * Hx[i*x + j21]) - ez[i*x*q + j21*q + 2];
+				ez[i3*x*q + j*q + 3] = 2 * W * (Ez[i31*x + j] - V[3*3 + 0] * Hy[i31*x + j] + V[3*3 + 1] * Hx[i31*x + j]) - ez[i31*x*q + j*q + 3];
+				ez[i*x*q + j*q  + 4] = 2 * W * (Ez[i41*x + j] - V[4*3 + 0] * Hy[i41*x + j] + V[4*3 + 1] * Hx[i41*x + j]) - ez[i41*x*q + j*q + 4];
+				ez[i*x*q + j*q  + 5] = 2 * W * (Ez[i*x   + j] - V[5*3 + 0] * Hy[i*x   + j] + V[5*3 + 1] * Hx[i*x   + j]) - ez[i*x*q + j*q   + 5];
+				ez[i*x*q + j*q  + 6] = 2 * W * (Ez[i*x   + j] - V[6*3 + 0] * Hy[i*x   + j] + V[6*3 + 1] * Hx[i*x   + j]) - ez[i*x*q + j*q   + 6];
 
 
-					hz[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((mur[i*y*x + j*x + k] - 1) * Hz[i*y*x + j*x + k]) - hz[i*y*x*q + j*x*q + k*q + 0];
-					hz[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Hz[i*y*x + j*x + k11] - V[1*3 + 1] * Ex[i*y*x + j*x + k11] + V[1*3 + 0] * Ey[i*y*x + j*x + k11]) - hz[i*y*x*q + j*x*q + k11*q + 1];
-					hz[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Hz[i*y*x + j*x + k21] - V[2*3 + 1] * Ex[i*y*x + j*x + k21] + V[2*3 + 0] * Ey[i*y*x + j*x + k21]) - hz[i*y*x*q + j*x*q + k21*q + 2];
-					hz[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Hz[i*y*x + j31*x + k] - V[3*3 + 1] * Ex[i*y*x + j31*x + k] + V[3*3 + 0] * Ey[i*y*x + j31*x + k]) - hz[i*y*x*q + j31*x*q + k*q + 3];
-					hz[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Hz[i*y*x + j41*x + k] - V[4*3 + 1] * Ex[i*y*x + j41*x + k] + V[4*3 + 0] * Ey[i*y*x + j41*x + k]) - hz[i*y*x*q + j41*x*q + k*q + 4];
-					hz[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Hz[i*y*x + j*x   + k] - V[5*3 + 1] * Ex[i*y*x + j*x   + k] + V[5*3 + 0] * Ey[i*y*x + j*x   + k]) - hz[i*y*x*q + j*x*q + k*q   + 5];
-					hz[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Hz[i*y*x + j*x   + k] - V[6*3 + 1] * Ex[i*y*x + j*x   + k] + V[6*3 + 0] * Ey[i*y*x + j*x   + k]) - hz[i*y*x*q + j*x*q + k*q   + 6];
-				}
+				hx[i*x*q + j*q  + 0] = 2 * ((mur[i*x + j] - 1) * Hx[i*x + j]) - hx[i*x*q + j*q + 0];
+				hx[i*x*q + j1*q + 1] = 2 * W * (Hx[i*x + j11] - V[1*3 + 2] * Ey[i*x + j11] + V[1*3 + 1] * Ez[i*x + j11]) - hx[i*x*q + j11*q + 1];
+				hx[i*x*q + j*q  + 2] = 2 * W * (Hx[i*x + j21] - V[2*3 + 2] * Ey[i*x + j21] + V[2*3 + 1] * Ez[i*x + j21]) - hx[i*x*q + j21*q + 2];
+				hx[i3*x*q + j*q + 3] = 2 * W * (Hx[i31*x + j] - V[3*3 + 2] * Ey[i31*x + j] + V[3*3 + 1] * Ez[i31*x + j]) - hx[i31*x*q + j*q + 3];
+				hx[i*x*q + j*q  + 4] = 2 * W * (Hx[i41*x + j] - V[4*3 + 2] * Ey[i41*x + j] + V[4*3 + 1] * Ez[i41*x + j]) - hx[i41*x*q + j*q + 4];
+				hx[i*x*q + j*q  + 5] = 2 * W * (Hx[i*x   + j] - V[5*3 + 2] * Ey[i*x   + j] + V[5*3 + 1] * Ez[i*x   + j]) - hx[i*x*q + j*q   + 5];
+				hx[i*x*q + j*q  + 6] = 2 * W * (Hx[i*x   + j] - V[6*3 + 2] * Ey[i*x   + j] + V[6*3 + 1] * Ez[i*x   + j]) - hx[i*x*q + j*q   + 6];
+				
+				
+				hy[i*x*q + j*q  + 0] = 2 * ((mur[i*x + j] - 1) * Hy[i*x + j]) - hy[i*x*q + j*q + 0];
+				hy[i*x*q + j1*q + 1] = 2 * W * (Hy[i*x + j11] - V[1*3 + 0] * Ez[i*x + j11] + V[1*3 + 2] * Ex[i*x + j11]) - hy[i*x*q + j11*q + 1];
+				hy[i*x*q + j*q  + 2] = 2 * W * (Hy[i*x + j21] - V[2*3 + 0] * Ez[i*x + j21] + V[2*3 + 2] * Ex[i*x + j21]) - hy[i*x*q + j21*q + 2];
+				hy[i3*x*q + j*q + 3] = 2 * W * (Hy[i31*x + j] - V[3*3 + 0] * Ez[i31*x + j] + V[3*3 + 2] * Ex[i31*x + j]) - hy[i31*x*q + j*q + 3];
+				hy[i*x*q + j*q  + 4] = 2 * W * (Hy[i41*x + j] - V[4*3 + 0] * Ez[i41*x + j] + V[4*3 + 2] * Ex[i41*x + j]) - hy[i41*x*q + j*q + 4];
+				hy[i*x*q + j*q  + 5] = 2 * W * (Hy[i*x   + j] - V[5*3 + 0] * Ez[i*x   + j] + V[5*3 + 2] * Ex[i*x   + j]) - hy[i*x*q + j*q   + 5];
+				hy[i*x*q + j*q  + 6] = 2 * W * (Hy[i*x   + j] - V[6*3 + 0] * Ez[i*x   + j] + V[6*3 + 2] * Ex[i*x   + j]) - hy[i*x*q + j*q   + 6];
+
+
+				hz[i*x*q + j*q  + 0] = 2 * ((mur[i*x + j] - 1) * Hz[i*x + j]) - hz[i*x*q + j*q + 0];
+				hz[i*x*q + j1*q + 1] = 2 * W * (Hz[i*x + j11] - V[1*3 + 1] * Ex[i*x + j11] + V[1*3 + 0] * Ey[i*x + j11]) - hz[i*x*q + j11*q + 1];
+				hz[i*x*q + j*q  + 2] = 2 * W * (Hz[i*x + j21] - V[2*3 + 1] * Ex[i*x + j21] + V[2*3 + 0] * Ey[i*x + j21]) - hz[i*x*q + j21*q + 2];
+				hz[i3*x*q + j*q + 3] = 2 * W * (Hz[i31*x + j] - V[3*3 + 1] * Ex[i31*x + j] + V[3*3 + 0] * Ey[i31*x + j]) - hz[i31*x*q + j*q + 3];
+				hz[i*x*q + j*q  + 4] = 2 * W * (Hz[i41*x + j] - V[4*3 + 1] * Ex[i41*x + j] + V[4*3 + 0] * Ey[i41*x + j]) - hz[i41*x*q + j*q + 4];
+				hz[i*x*q + j*q  + 5] = 2 * W * (Hz[i*x   + j] - V[5*3 + 1] * Ex[i*x   + j] + V[5*3 + 0] * Ey[i*x   + j]) - hz[i*x*q + j*q   + 5];
+				hz[i*x*q + j*q  + 6] = 2 * W * (Hz[i*x   + j] - V[6*3 + 1] * Ex[i*x   + j] + V[6*3 + 0] * Ey[i*x   + j]) - hz[i*x*q + j*q   + 6];
 			}
 		}
 	}
@@ -235,83 +230,82 @@ void collStreamForcingNode(float* ex, float* ey, float* ez, float* hx, float* hy
 /*---------------------------------------------------------------------------------------------------------------------*/
 
 
-void collStream(float* ex, float* ey, float* ez, float* hx, float* hy, float* hz, float* Ex, float* Ey, float* Ez, float* Hx, float* Hy, float* Hz, float* er, float* mur, int z, int y, int x, int q) {
+void collStream(float* ex, float* ey, float* ez, float* hx, float* hy, float* hz, float* Ex, float* Ey, float* Ez, float* Hx, float* Hy, float* Hz, float* er, float* mur, int y, int x, int q) {
 
-	int i=0, j=0, k=0;
+	int i, j;
 	
 	
 
-	for (i = 0; i < z; i++) {
-		for (j = 0; j < y; j++) {
-			for (k = 0; k < x; k++) {
+	
+	for (i = 0; i < y; i++) {
+		for (j = 0; j < x; j++) {
+		
+			int j1 = x-1-j, j11 = j1 - 1;
+			int j21 = j+1;
+			int i3 = y-1-i, i31 = i3-1;
+			int i41 = i+1;
+
+			if (j1 == 0)
+				j11 = j1;
+			if (j == x-1)
+				j21 = j;
+			if (i3 == 0)
+				i31 = i3;
+			if (i == y-1)
+				i41 = i;
+				
+			ex[i*x*q + j*q  + 0] = 2 * ((er[i*x + j] - 1) * Ex[i*x + j]) - ex[i*x*q + j*q + 0];
+			ex[i*x*q + j1*q + 1] = 2 * W * (Ex[i*x + j11] - V[1*3 + 1] * Hz[i*x + j11] + V[1*3 + 2] * Hy[i*x + j11]) - ex[i*x*q + j11*q + 1];
+			ex[i*x*q + j*q  + 2] = 2 * W * (Ex[i*x + j21] - V[2*3 + 1] * Hz[i*x + j21] + V[2*3 + 2] * Hy[i*x + j21]) - ex[i*x*q + j21*q + 2];
+			ex[i3*x*q + j*q + 3] = 2 * W * (Ex[i31*x + j] - V[3*3 + 1] * Hz[i31*x + j] + V[3*3 + 2] * Hy[i31*x + j]) - ex[i31*x*q + j*q + 3];
+			ex[i*x*q + j*q  + 4] = 2 * W * (Ex[i41*x + j] - V[4*3 + 1] * Hz[i41*x + j] + V[4*3 + 2] * Hy[i41*x + j]) - ex[i41*x*q + j*q + 4];
+			ex[i*x*q + j*q  + 5] = 2 * W * (Ex[i*x   + j] - V[5*3 + 1] * Hz[i*x   + j] + V[5*3 + 2] * Hy[i*x   + j]) - ex[i*x*q + j*q   + 5];
+			ex[i*x*q + j*q  + 6] = 2 * W * (Ex[i*x   + j] - V[6*3 + 1] * Hz[i*x   + j] + V[6*3 + 2] * Hy[i*x   + j]) - ex[i*x*q + j*q   + 6];
 			
-				int k1 = x-1-k, k11 = k1 - 1;
-				int k21 = k+1;
-				int j3 = y-1-j, j31 = j3-1;
-				int j41 = j+1;
-
-				if (k1 == 0)
-					k11 = k1;
-				if (k == x-1)
-					k21 = k;
-				if (j3 == 0)
-					j31 = j3;
-				if (j == y-1)
-					j41 = j;
-					
-				ex[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((er[i*y*x + j*x + k] - 1) * Ex[i*y*x + j*x + k]) - ex[i*y*x*q + j*x*q + k*q + 0];
-				ex[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Ex[i*y*x + j*x + k11] - V[1*3 + 1] * Hz[i*y*x + j*x + k11] + V[1*3 + 2] * Hy[i*y*x + j*x + k11]) - ex[i*y*x*q + j*x*q + k11*q + 1];
-				ex[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Ex[i*y*x + j*x + k21] - V[2*3 + 1] * Hz[i*y*x + j*x + k21] + V[2*3 + 2] * Hy[i*y*x + j*x + k21]) - ex[i*y*x*q + j*x*q + k21*q + 2];
-				ex[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Ex[i*y*x + j31*x + k] - V[3*3 + 1] * Hz[i*y*x + j31*x + k] + V[3*3 + 2] * Hy[i*y*x + j31*x + k]) - ex[i*y*x*q + j31*x*q + k*q + 3];
-				ex[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Ex[i*y*x + j41*x + k] - V[4*3 + 1] * Hz[i*y*x + j41*x + k] + V[4*3 + 2] * Hy[i*y*x + j41*x + k]) - ex[i*y*x*q + j41*x*q + k*q + 4];
-				ex[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Ex[i*y*x + j*x   + k] - V[5*3 + 1] * Hz[i*y*x + j*x   + k] + V[5*3 + 2] * Hy[i*y*x + j*x   + k]) - ex[i*y*x*q + j*x*q + k*q   + 5];
-				ex[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Ex[i*y*x + j*x   + k] - V[6*3 + 1] * Hz[i*y*x + j*x   + k] + V[6*3 + 2] * Hy[i*y*x + j*x   + k]) - ex[i*y*x*q + j*x*q + k*q   + 6];
-				
-				
-				ey[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((er[i*y*x + j*x + k] - 1) * Ey[i*y*x + j*x + k]) - ey[i*y*x*q + j*x*q + k*q + 0];
-				ey[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Ey[i*y*x + j*x + k11] - V[1*3 + 2] * Hx[i*y*x + j*x + k11] + V[1*3 + 0] * Hz[i*y*x + j*x + k11]) - ey[i*y*x*q + j*x*q + k11*q + 1];
-				ey[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Ey[i*y*x + j*x + k21] - V[2*3 + 2] * Hx[i*y*x + j*x + k21] + V[2*3 + 0] * Hz[i*y*x + j*x + k21]) - ey[i*y*x*q + j*x*q + k21*q + 2];
-				ey[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Ey[i*y*x + j31*x + k] - V[3*3 + 2] * Hx[i*y*x + j31*x + k] + V[3*3 + 0] * Hz[i*y*x + j31*x + k]) - ey[i*y*x*q + j31*x*q + k*q + 3];
-				ey[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Ey[i*y*x + j41*x + k] - V[4*3 + 2] * Hx[i*y*x + j41*x + k] + V[4*3 + 0] * Hz[i*y*x + j41*x + k]) - ey[i*y*x*q + j41*x*q + k*q + 4];
-				ey[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Ey[i*y*x + j*x   + k] - V[5*3 + 2] * Hx[i*y*x + j*x   + k] + V[5*3 + 0] * Hz[i*y*x + j*x   + k]) - ey[i*y*x*q + j*x*q + k*q   + 5];
-				ey[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Ey[i*y*x + j*x   + k] - V[6*3 + 2] * Hx[i*y*x + j*x   + k] + V[6*3 + 0] * Hz[i*y*x + j*x   + k]) - ey[i*y*x*q + j*x*q + k*q   + 6];
+			
+			ey[i*x*q + j*q  + 0] = 2 * ((er[i*x + j] - 1) * Ey[i*x + j]) - ey[i*x*q + j*q + 0];
+			ey[i*x*q + j1*q + 1] = 2 * W * (Ey[i*x + j11] - V[1*3 + 2] * Hx[i*x + j11] + V[1*3 + 0] * Hz[i*x + j11]) - ey[i*x*q + j11*q + 1];
+			ey[i*x*q + j*q  + 2] = 2 * W * (Ey[i*x + j21] - V[2*3 + 2] * Hx[i*x + j21] + V[2*3 + 0] * Hz[i*x + j21]) - ey[i*x*q + j21*q + 2];
+			ey[i3*x*q + j*q + 3] = 2 * W * (Ey[i31*x + j] - V[3*3 + 2] * Hx[i31*x + j] + V[3*3 + 0] * Hz[i31*x + j]) - ey[i31*x*q + j*q + 3];
+			ey[i*x*q + j*q  + 4] = 2 * W * (Ey[i41*x + j] - V[4*3 + 2] * Hx[i41*x + j] + V[4*3 + 0] * Hz[i41*x + j]) - ey[i41*x*q + j*q + 4];
+			ey[i*x*q + j*q  + 5] = 2 * W * (Ey[i*x   + j] - V[5*3 + 2] * Hx[i*x   + j] + V[5*3 + 0] * Hz[i*x   + j]) - ey[i*x*q + j*q   + 5];
+			ey[i*x*q + j*q  + 6] = 2 * W * (Ey[i*x   + j] - V[6*3 + 2] * Hx[i*x   + j] + V[6*3 + 0] * Hz[i*x   + j]) - ey[i*x*q + j*q   + 6];
 
 
-				ez[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((er[i*y*x + j*x + k] - 1) * Ez[i*y*x + j*x + k]) - ez[i*y*x*q + j*x*q + k*q + 0];
-				ez[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Ez[i*y*x + j*x + k11] - V[1*3 + 0] * Hy[i*y*x + j*x + k11] + V[1*3 + 1] * Hx[i*y*x + j*x + k11]) - ez[i*y*x*q + j*x*q + k11*q + 1];
-				ez[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Ez[i*y*x + j*x + k21] - V[2*3 + 0] * Hy[i*y*x + j*x + k21] + V[2*3 + 1] * Hx[i*y*x + j*x + k21]) - ez[i*y*x*q + j*x*q + k21*q + 2];
-				ez[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Ez[i*y*x + j31*x + k] - V[3*3 + 0] * Hy[i*y*x + j31*x + k] + V[3*3 + 1] * Hx[i*y*x + j31*x + k]) - ez[i*y*x*q + j31*x*q + k*q + 3];
-				ez[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Ez[i*y*x + j41*x + k] - V[4*3 + 0] * Hy[i*y*x + j41*x + k] + V[4*3 + 1] * Hx[i*y*x + j41*x + k]) - ez[i*y*x*q + j41*x*q + k*q + 4];
-				ez[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Ez[i*y*x + j*x   + k] - V[5*3 + 0] * Hy[i*y*x + j*x   + k] + V[5*3 + 1] * Hx[i*y*x + j*x   + k]) - ez[i*y*x*q + j*x*q + k*q   + 5];
-				ez[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Ez[i*y*x + j*x   + k] - V[6*3 + 0] * Hy[i*y*x + j*x   + k] + V[6*3 + 1] * Hx[i*y*x + j*x   + k]) - ez[i*y*x*q + j*x*q + k*q   + 6];
+			ez[i*x*q + j*q  + 0] = 2 * ((er[i*x + j] - 1) * Ez[i*x + j]) - ez[i*x*q + j*q + 0];
+			ez[i*x*q + j1*q + 1] = 2 * W * (Ez[i*x + j11] - V[1*3 + 0] * Hy[i*x + j11] + V[1*3 + 1] * Hx[i*x + j11]) - ez[i*x*q + j11*q + 1];
+			ez[i*x*q + j*q  + 2] = 2 * W * (Ez[i*x + j21] - V[2*3 + 0] * Hy[i*x + j21] + V[2*3 + 1] * Hx[i*x + j21]) - ez[i*x*q + j21*q + 2];
+			ez[i3*x*q + j*q + 3] = 2 * W * (Ez[i31*x + j] - V[3*3 + 0] * Hy[i31*x + j] + V[3*3 + 1] * Hx[i31*x + j]) - ez[i31*x*q + j*q + 3];
+			ez[i*x*q + j*q  + 4] = 2 * W * (Ez[i41*x + j] - V[4*3 + 0] * Hy[i41*x + j] + V[4*3 + 1] * Hx[i41*x + j]) - ez[i41*x*q + j*q + 4];
+			ez[i*x*q + j*q  + 5] = 2 * W * (Ez[i*x   + j] - V[5*3 + 0] * Hy[i*x   + j] + V[5*3 + 1] * Hx[i*x   + j]) - ez[i*x*q + j*q   + 5];
+			ez[i*x*q + j*q  + 6] = 2 * W * (Ez[i*x   + j] - V[6*3 + 0] * Hy[i*x   + j] + V[6*3 + 1] * Hx[i*x   + j]) - ez[i*x*q + j*q   + 6];
 
 
-				hx[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((mur[i*y*x + j*x + k] - 1) * Hx[i*y*x + j*x + k]) - hx[i*y*x*q + j*x*q + k*q + 0];
-				hx[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Hx[i*y*x + j*x + k11] - V[1*3 + 2] * Ey[i*y*x + j*x + k11] + V[1*3 + 1] * Ez[i*y*x + j*x + k11]) - hx[i*y*x*q + j*x*q + k11*q + 1];
-				hx[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Hx[i*y*x + j*x + k21] - V[2*3 + 2] * Ey[i*y*x + j*x + k21] + V[2*3 + 1] * Ez[i*y*x + j*x + k21]) - hx[i*y*x*q + j*x*q + k21*q + 2];
-				hx[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Hx[i*y*x + j31*x + k] - V[3*3 + 2] * Ey[i*y*x + j31*x + k] + V[3*3 + 1] * Ez[i*y*x + j31*x + k]) - hx[i*y*x*q + j31*x*q + k*q + 3];
-				hx[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Hx[i*y*x + j41*x + k] - V[4*3 + 2] * Ey[i*y*x + j41*x + k] + V[4*3 + 1] * Ez[i*y*x + j41*x + k]) - hx[i*y*x*q + j41*x*q + k*q + 4];
-				hx[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Hx[i*y*x + j*x   + k] - V[5*3 + 2] * Ey[i*y*x + j*x   + k] + V[5*3 + 1] * Ez[i*y*x + j*x   + k]) - hx[i*y*x*q + j*x*q + k*q   + 5];
-				hx[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Hx[i*y*x + j*x   + k] - V[6*3 + 2] * Ey[i*y*x + j*x   + k] + V[6*3 + 1] * Ez[i*y*x + j*x   + k]) - hx[i*y*x*q + j*x*q + k*q   + 6];
-				
-				
-				hy[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((mur[i*y*x + j*x + k] - 1) * Hy[i*y*x + j*x + k]) - hy[i*y*x*q + j*x*q + k*q + 0];
-				hy[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Hy[i*y*x + j*x + k11] - V[1*3 + 0] * Ez[i*y*x + j*x + k11] + V[1*3 + 2] * Ex[i*y*x + j*x + k11]) - hy[i*y*x*q + j*x*q + k11*q + 1];
-				hy[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Hy[i*y*x + j*x + k21] - V[2*3 + 0] * Ez[i*y*x + j*x + k21] + V[2*3 + 2] * Ex[i*y*x + j*x + k21]) - hy[i*y*x*q + j*x*q + k21*q + 2];
-				hy[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Hy[i*y*x + j31*x + k] - V[3*3 + 0] * Ez[i*y*x + j31*x + k] + V[3*3 + 2] * Ex[i*y*x + j31*x + k]) - hy[i*y*x*q + j31*x*q + k*q + 3];
-				hy[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Hy[i*y*x + j41*x + k] - V[4*3 + 0] * Ez[i*y*x + j41*x + k] + V[4*3 + 2] * Ex[i*y*x + j41*x + k]) - hy[i*y*x*q + j41*x*q + k*q + 4];
-				hy[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Hy[i*y*x + j*x   + k] - V[5*3 + 0] * Ez[i*y*x + j*x   + k] + V[5*3 + 2] * Ex[i*y*x + j*x   + k]) - hy[i*y*x*q + j*x*q + k*q   + 5];
-				hy[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Hy[i*y*x + j*x   + k] - V[6*3 + 0] * Ez[i*y*x + j*x   + k] + V[6*3 + 2] * Ex[i*y*x + j*x   + k]) - hy[i*y*x*q + j*x*q + k*q   + 6];
+			hx[i*x*q + j*q  + 0] = 2 * ((mur[i*x + j] - 1) * Hx[i*x + j]) - hx[i*x*q + j*q + 0];
+			hx[i*x*q + j1*q + 1] = 2 * W * (Hx[i*x + j11] - V[1*3 + 2] * Ey[i*x + j11] + V[1*3 + 1] * Ez[i*x + j11]) - hx[i*x*q + j11*q + 1];
+			hx[i*x*q + j*q  + 2] = 2 * W * (Hx[i*x + j21] - V[2*3 + 2] * Ey[i*x + j21] + V[2*3 + 1] * Ez[i*x + j21]) - hx[i*x*q + j21*q + 2];
+			hx[i3*x*q + j*q + 3] = 2 * W * (Hx[i31*x + j] - V[3*3 + 2] * Ey[i31*x + j] + V[3*3 + 1] * Ez[i31*x + j]) - hx[i31*x*q + j*q + 3];
+			hx[i*x*q + j*q  + 4] = 2 * W * (Hx[i41*x + j] - V[4*3 + 2] * Ey[i41*x + j] + V[4*3 + 1] * Ez[i41*x + j]) - hx[i41*x*q + j*q + 4];
+			hx[i*x*q + j*q  + 5] = 2 * W * (Hx[i*x   + j] - V[5*3 + 2] * Ey[i*x   + j] + V[5*3 + 1] * Ez[i*x   + j]) - hx[i*x*q + j*q   + 5];
+			hx[i*x*q + j*q  + 6] = 2 * W * (Hx[i*x   + j] - V[6*3 + 2] * Ey[i*x   + j] + V[6*3 + 1] * Ez[i*x   + j]) - hx[i*x*q + j*q   + 6];
+			
+			
+			hy[i*x*q + j*q  + 0] = 2 * ((mur[i*x + j] - 1) * Hy[i*x + j]) - hy[i*x*q + j*q + 0];
+			hy[i*x*q + j1*q + 1] = 2 * W * (Hy[i*x + j11] - V[1*3 + 0] * Ez[i*x + j11] + V[1*3 + 2] * Ex[i*x + j11]) - hy[i*x*q + j11*q + 1];
+			hy[i*x*q + j*q  + 2] = 2 * W * (Hy[i*x + j21] - V[2*3 + 0] * Ez[i*x + j21] + V[2*3 + 2] * Ex[i*x + j21]) - hy[i*x*q + j21*q + 2];
+			hy[i3*x*q + j*q + 3] = 2 * W * (Hy[i31*x + j] - V[3*3 + 0] * Ez[i31*x + j] + V[3*3 + 2] * Ex[i31*x + j]) - hy[i31*x*q + j*q + 3];
+			hy[i*x*q + j*q  + 4] = 2 * W * (Hy[i41*x + j] - V[4*3 + 0] * Ez[i41*x + j] + V[4*3 + 2] * Ex[i41*x + j]) - hy[i41*x*q + j*q + 4];
+			hy[i*x*q + j*q  + 5] = 2 * W * (Hy[i*x   + j] - V[5*3 + 0] * Ez[i*x   + j] + V[5*3 + 2] * Ex[i*x   + j]) - hy[i*x*q + j*q   + 5];
+			hy[i*x*q + j*q  + 6] = 2 * W * (Hy[i*x   + j] - V[6*3 + 0] * Ez[i*x   + j] + V[6*3 + 2] * Ex[i*x   + j]) - hy[i*x*q + j*q   + 6];
 
 
-				hz[i*y*x*q + j*x*q + k*q  + 0] = 2 * ((mur[i*y*x + j*x + k] - 1) * Hz[i*y*x + j*x + k]) - hz[i*y*x*q + j*x*q + k*q + 0];
-				hz[i*y*x*q + j*x*q + k1*q + 1] = 2 * W * (Hz[i*y*x + j*x + k11] - V[1*3 + 1] * Ex[i*y*x + j*x + k11] + V[1*3 + 0] * Ey[i*y*x + j*x + k11]) - hz[i*y*x*q + j*x*q + k11*q + 1];
-				hz[i*y*x*q + j*x*q + k*q  + 2] = 2 * W * (Hz[i*y*x + j*x + k21] - V[2*3 + 1] * Ex[i*y*x + j*x + k21] + V[2*3 + 0] * Ey[i*y*x + j*x + k21]) - hz[i*y*x*q + j*x*q + k21*q + 2];
-				hz[i*y*x*q + j3*x*q + k*q + 3] = 2 * W * (Hz[i*y*x + j31*x + k] - V[3*3 + 1] * Ex[i*y*x + j31*x + k] + V[3*3 + 0] * Ey[i*y*x + j31*x + k]) - hz[i*y*x*q + j31*x*q + k*q + 3];
-				hz[i*y*x*q + j*x*q + k*q  + 4] = 2 * W * (Hz[i*y*x + j41*x + k] - V[4*3 + 1] * Ex[i*y*x + j41*x + k] + V[4*3 + 0] * Ey[i*y*x + j41*x + k]) - hz[i*y*x*q + j41*x*q + k*q + 4];
-				hz[i*y*x*q + j*x*q + k*q  + 5] = 2 * W * (Hz[i*y*x + j*x   + k] - V[5*3 + 1] * Ex[i*y*x + j*x   + k] + V[5*3 + 0] * Ey[i*y*x + j*x   + k]) - hz[i*y*x*q + j*x*q + k*q   + 5];
-				hz[i*y*x*q + j*x*q + k*q  + 6] = 2 * W * (Hz[i*y*x + j*x   + k] - V[6*3 + 1] * Ex[i*y*x + j*x   + k] + V[6*3 + 0] * Ey[i*y*x + j*x   + k]) - hz[i*y*x*q + j*x*q + k*q   + 6];
-			}
+			hz[i*x*q + j*q  + 0] = 2 * ((mur[i*x + j] - 1) * Hz[i*x + j]) - hz[i*x*q + j*q + 0];
+			hz[i*x*q + j1*q + 1] = 2 * W * (Hz[i*x + j11] - V[1*3 + 1] * Ex[i*x + j11] + V[1*3 + 0] * Ey[i*x + j11]) - hz[i*x*q + j11*q + 1];
+			hz[i*x*q + j*q  + 2] = 2 * W * (Hz[i*x + j21] - V[2*3 + 1] * Ex[i*x + j21] + V[2*3 + 0] * Ey[i*x + j21]) - hz[i*x*q + j21*q + 2];
+			hz[i3*x*q + j*q + 3] = 2 * W * (Hz[i31*x + j] - V[3*3 + 1] * Ex[i31*x + j] + V[3*3 + 0] * Ey[i31*x + j]) - hz[i31*x*q + j*q + 3];
+			hz[i*x*q + j*q  + 4] = 2 * W * (Hz[i41*x + j] - V[4*3 + 1] * Ex[i41*x + j] + V[4*3 + 0] * Ey[i41*x + j]) - hz[i41*x*q + j*q + 4];
+			hz[i*x*q + j*q  + 5] = 2 * W * (Hz[i*x   + j] - V[5*3 + 1] * Ex[i*x   + j] + V[5*3 + 0] * Ey[i*x   + j]) - hz[i*x*q + j*q   + 5];
+			hz[i*x*q + j*q  + 6] = 2 * W * (Hz[i*x   + j] - V[6*3 + 1] * Ex[i*x   + j] + V[6*3 + 0] * Ey[i*x   + j]) - hz[i*x*q + j*q   + 6];
 		}
 	}
 }
