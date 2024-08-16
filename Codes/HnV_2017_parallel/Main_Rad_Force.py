@@ -10,6 +10,9 @@ from Module_Traction import tractionFx, tractionFy, tractionFz
 from Module_EM_Wave import planeWaveTM
 import Module_Geometry
 
+from parameters import *
+from Shared_Lib import *
+
 
 t0 = time.time()
 
@@ -19,30 +22,6 @@ if not os.path.exists(directory):
     os.makedirs(directory)
 
 
-
-
-# Accessing command line arguments
-parameters = sys.argv
-
-ratio = 0.5#float(parameters[1])
-
-######################
-
-#ratio = 0.95   # ratio = a / wavelength
-
-a  = 25
-n = 4
-Nx, Ny = n*a, n*a  # size of the computational domain
-
-er1, mur1, er2, er3 = 1, 1, 4, 5   # material properties i.e. permittivity and permeabilty
-
-
-#############################
-# boundary of EM wave source
-xloc = 0
-ymin = 0
-ymax = Ny
-#############################
 
 
 ######################
@@ -59,9 +38,6 @@ omega = 2 * np.pi / period
 ###############################
 
 
-
-noOfPeriods = 1
-noOfReflections = 30
 
 Time = 3 * (Nx * np.sqrt(er1) + noOfReflections * 2 * a * np.sqrt(er2)) + noOfPeriods * period
 
@@ -86,6 +62,7 @@ def initilize_dis_func(Ny=10, Nx=10, Q=7):
     return np.zeros((Ny, Nx, Q), dtype=np.float32, order='C')
 
 ex, ey, ez, hx, hy, hz = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
+exb, eyb, ezb, hxb, hyb, hzb = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
 
 
 # initilizing the domain properties
@@ -131,17 +108,17 @@ cx = Nx//2 + 0.5
 cy = Ny//2 + 0.5
 
 # converting to polar coordinates
-ModuleGeometry.carToPolar(r, phi, Ny, Nx, cy, cx)
+Module_Geometry.carToPolar(r, phi, Ny, Nx, cy, cx)
 
 # scatterer particle
-scatterer = ModuleGeometry.circle(r, a, Ny, Nx)
+scatterer = Module_Geometry.circle(r, a, Ny, Nx)
 
 er[scatterer] = er2
 
 # coordinates where traction vector is being calculated
 R = 1.0*a
-X_polar1 = R * np.cos(theta*np.pi/180) + cx
-Y_polar1 = R * np.sin(theta*np.pi/180) + cy
+X_polar = R * np.cos(theta*np.pi/180) + cx
+Y_polar = R * np.sin(theta*np.pi/180) + cy
 
 ################################################################
 
@@ -149,34 +126,6 @@ Y_polar1 = R * np.sin(theta*np.pi/180) + cy
 
 
 
-###############################################################################################################
-########                                           SHARED LIBRARY                                   ###########
-###############################################################################################################
-
-# loading the shared file (c library)
-path = os.getcwd()
-myclib = CDLL(os.path.join(path, "LBM_Sequential.so"))
-
-# defining 3D and 4D pointers (LBM runs in C, for that pointer is needed)
-P2D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=2, flags="C")
-P3D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=3, flags="C")
-
-# calculation of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.macroField.argtypes = [P3D, P2D, P2D, c_int, c_int, c_int]
-myclib.macroField.restype  = None
-
-# initilization of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.initializeField.argtypes = [P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int]
-myclib.initializeField.restype  = None
-
-# collision and streaming (FUNCTION PROTOTYPE)
-myclib.collStream.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int]
-myclib.collStream.restype  = None
-
-myclib.collStreamForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int, c_int, c_int, c_int]
-myclib.collStreamForcingNode.restype  = None
-
-###############################################################################################################
 
 
 t1 = time.time()
@@ -190,6 +139,7 @@ Traction1 = []
 
 
 for t in range(int(Time)):
+    
     
 
     #################################################################################################################
@@ -215,17 +165,18 @@ for t in range(int(Time)):
         planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax)
 
         # collision and streaming (the 2 steps of LBM) when field is forced
-        myclib.collStreamForcingNode(ex, ey, ez, hx, hy, hz, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q)
 
     else:
         
         # collision and streaming (the 2 steps of LBM) when field is not forced
-        myclib.collStream(ex, ey, ez, hx, hy, hz, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q)
+        myclib.collNotForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q)
+        myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q)
         
     ###############################################################################################################
 
-    
-
+   
     
     if (t >= int(Time) - int(np.round(period))):
 
@@ -248,21 +199,21 @@ for t in range(int(Time)):
         ###############################################################################################################
 
         # interpolated values of fields at a circle of radius R1
-        Ex_interp = Ex_spline.ev(Y_polar1, X_polar1)
-        Ey_interp = Ey_spline.ev(Y_polar1, X_polar1)
-        Ez_interp = Ez_spline.ev(Y_polar1, X_polar1)
+        Ex_interp = Ex_spline.ev(Y_polar, X_polar)
+        Ey_interp = Ey_spline.ev(Y_polar, X_polar)
+        Ez_interp = Ez_spline.ev(Y_polar, X_polar)
 
-        Hx_interp = Hx_spline.ev(Y_polar1, X_polar1)
-        Hy_interp = Hy_spline.ev(Y_polar1, X_polar1)
-        Hz_interp = Hz_spline.ev(Y_polar1, X_polar1)
+        Hx_interp = Hx_spline.ev(Y_polar, X_polar)
+        Hy_interp = Hy_spline.ev(Y_polar, X_polar)
+        Hz_interp = Hz_spline.ev(Y_polar, X_polar)
         
         # integrating the traction force over the perimeter of the circle
         TdotN1 = tractionFx(Ex_interp, Ey_interp, Ez_interp, Hx_interp, Hy_interp, Hz_interp, er1, mur1, nx, ny, nz)
         Traction1.append(TdotN1)
-        Fx1.append(np.sum(TdotN1 * R1 * dtheta * (np.pi / 180) / (a1 / ratio)))
+        Fx1.append(np.sum(TdotN1 * R * dtheta * (np.pi / 180) / (a / ratio)))
         ###############################################################################################################
-    
 
+        
 ###############################################################################################################   
     t2 = time.time()
         
@@ -274,7 +225,6 @@ t3 = time.time()
 total_time = (t3 - t0) / 60
 print(f"\nTotal time taken: {total_time:.2f} minutes")
 ###############################################################################################################
-
 
 Fx_avg1.append(np.average(Fx1))
 print(Fx_avg1[0])

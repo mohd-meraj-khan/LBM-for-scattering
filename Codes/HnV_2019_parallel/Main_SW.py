@@ -10,6 +10,9 @@ from Module_Traction import tractionFx, tractionFy, tractionFz
 from Module_EM_Wave import planeWaveTM
 import Module_Geometry
 
+from parameters import *
+from Shared_Lib import *
+
 
 t0 = time.time()
 
@@ -21,32 +24,10 @@ if not os.path.exists(directory):
 
 
 
-# Accessing command line arguments
-parameters = sys.argv
-
-
-######################
-
-
-a, ratio = 25, 0.95   # ratio = a / wavelength
-n = 4
-Nx, Ny = n*a, n*a  # size of the computational domain
-
-er1, mur1, er2, er3 = 1, 1, 4, 5   # material properties i.e. permittivity and permeabilty
-
-
-#############################
-# boundary of EM wave source
-xloc = 0
-ymin = 0
-ymax = Ny
-#############################
-
-
 ######################
 # LBM properties (DO NOT CHANGE)
-Q = 7               # number of velocities at a grid
-velocity = 1.0/3    # velocity of EM wave in vacuum
+Q = 12               # number of velocities at a grid
+velocity = 1.0/2    # velocity of EM wave in vacuum
 ######################
 
 
@@ -57,9 +38,6 @@ omega = 2 * np.pi / period
 ###############################
 
 
-
-noOfPeriods = 1
-noOfReflections = 30
 
 Time = 3 * (Nx * np.sqrt(er1) + noOfReflections * 2 * a * np.sqrt(er2)) + noOfPeriods * period
 
@@ -80,15 +58,19 @@ Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc = [initialize_field(Ny, Nx) for _
 Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot = [initialize_field(Ny, Nx) for _ in range(6)]
 Ex_scat, Ey_scat, Ez_scat, Hx_scat, Hy_scat, Hz_scat = [initialize_field(Ny, Nx) for _ in range(6)]
 
+Px_inc, Py_inc, Pz_inc, Mx_inc, My_inc, Mz_inc = [initialize_field(Ny, Nx) for _ in range(6)]
+Px_tot, Py_tot, Pz_tot, Mx_tot, My_tot, Mz_tot = [initialize_field(Ny, Nx) for _ in range(6)]
+
+Pxb_inc, Pyb_inc, Pzb_inc, Mxb_inc, Myb_inc, Mzb_inc = [initialize_field(Ny, Nx) for _ in range(6)]
+Pxb_tot, Pyb_tot, Pzb_tot, Mxb_tot, Myb_tot, Mzb_tot = [initialize_field(Ny, Nx) for _ in range(6)]
+
 
 # initializing the distribution functions of electric and magnetic fields
 def initilize_dis_func(Ny=10, Nx=10, Q=7):
     return np.zeros((Ny, Nx, Q), dtype=np.float32, order='C')
 
-ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
-exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
-ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
-exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
+f_inc, fb_inc = [initilize_dis_func(Ny, Nx, Q) for _ in range(2)]
+f_tot, fb_tot = [initilize_dis_func(Ny, Nx, Q) for _ in range(2)]
 
 
 # initilizing the domain properties
@@ -135,10 +117,10 @@ cx = Nx//2 + 0.5
 cy = Ny//2 + 0.5
 
 # converting to polar coordinates
-ModuleGeometry.carToPolar(r, phi, Ny, Nx, cy, cx)
+Module_Geometry.carToPolar(r, phi, Ny, Nx, cy, cx)
 
 # scatterer particle
-scatterer = ModuleGeometry.circle(r, a, Ny, Nx)
+scatterer = Module_Geometry.circle(r, a, Ny, Nx)
 
 er_tot[scatterer] = er2
 
@@ -164,39 +146,6 @@ Y_polar4 = R[3] * np.sin(theta*np.pi/180) + Ny//2 + 0.5
 
 
 
-###############################################################################################################
-########                                           SHARED LIBRARY                                   ###########
-###############################################################################################################
-
-# loading the shared file (c library)
-path = os.getcwd()
-myclib = CDLL(os.path.join(path, "LBM.so"))
-
-# defining 3D and 4D pointers (LBM runs in C, for that pointer is needed)
-P2D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=2, flags="C")
-P3D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=3, flags="C")
-
-# calculation of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.macroField.argtypes = [P3D, P2D, P2D, c_int, c_int, c_int]
-myclib.macroField.restype  = None
-
-# initilization of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.initializeField.argtypes = [P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int]
-myclib.initializeField.restype  = None
-
-# collision and streaming (FUNCTION PROTOTYPE)
-myclib.collNotForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int]
-myclib.collNotForcingNode.restype  = None
-
-
-myclib.collForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int, c_int, c_int, c_int]
-myclib.collForcingNode.restype  = None
-
-
-myclib.streaming.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, c_int, c_int, c_int]
-myclib.streaming.restype  = None
-
-###############################################################################################################
 
 t1 = time.time()
 
@@ -215,29 +164,12 @@ for t in range(int(Time)):
     ########                                         LBM CALCULATION                                          #######
     #################################################################################################################
 
-    # initialization of macroscopic fields
-    myclib.initializeField(Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, Ny, Nx)
-    myclib.initializeField(Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, Ny, Nx)
-
     # computation of macroscopic fields from distribution function
-    myclib.macroField(ex_inc, er_inc, Ex_inc, Ny, Nx, Q)
-    myclib.macroField(ey_inc, er_inc, Ey_inc, Ny, Nx, Q)
-    myclib.macroField(ez_inc, er_inc, Ez_inc, Ny, Nx, Q)
-
-    myclib.macroField(hx_inc, mur_inc, Hx_inc, Ny, Nx, Q)
-    myclib.macroField(hy_inc, mur_inc, Hy_inc, Ny, Nx, Q)
-    myclib.macroField(hz_inc, mur_inc, Hz_inc, Ny, Nx, Q)
+    myclib.macroField(f_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, Px_inc, Py_inc, Pz_inc, Mx_inc, My_inc, Mz_inc, er_inc, mur_inc, Ny, Nx, Q)
+    myclib.macroField(f_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, Px_tot, Py_tot, Pz_tot, Mx_tot, My_tot, Mz_tot, er_tot, mur_tot, Ny, Nx, Q)
 
 
-    myclib.macroField(ex_tot, er_tot, Ex_tot, Ny, Nx, Q)
-    myclib.macroField(ey_tot, er_tot, Ey_tot, Ny, Nx, Q)
-    myclib.macroField(ez_tot, er_tot, Ez_tot, Ny, Nx, Q)
-
-    myclib.macroField(hx_tot, mur_tot, Hx_tot, Ny, Nx, Q)
-    myclib.macroField(hy_tot, mur_tot, Hy_tot, Ny, Nx, Q)
-    myclib.macroField(hz_tot, mur_tot, Hz_tot, Ny, Nx, Q)
-
-
+    
 
 
     if (t >= 0):
@@ -251,13 +183,19 @@ for t in range(int(Time)):
         Hx_scat = Hx_tot - Hx_inc
         Hy_scat = Hy_tot - Hy_inc
 
+        Ez_scat[scatterer] = 0
+        Hx_scat[scatterer] = 0
+        Hy_scat[scatterer] = 0
+
 
         # collision and streaming (the 2 steps of LBM) when field is forced
-        myclib.collForcingNode(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q, xloc, ymin, ymax)
-        myclib.collForcingNode(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q, xloc, ymin, ymax)
-        myclib.streaming(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ny, Nx, Q)
-        myclib.streaming(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ny, Nx, Q)
+        myclib.collForcingNode(f_inc, fb_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, Px_inc, Py_inc, Pz_inc,
+                               Mx_inc, My_inc, Mz_inc, Pxb_inc, Pyb_inc, Pzb_inc, Mxb_inc, Myb_inc, Mzb_inc, er_inc, mur_inc, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.streaming(f_inc, fb_inc, Px_inc, Py_inc, Pz_inc, Mx_inc, My_inc, Mz_inc, Pxb_inc, Pyb_inc, Pzb_inc, Mxb_inc, Myb_inc, Mzb_inc, Ny, Nx, Q)
 
+        myclib.collForcingNode(f_tot, fb_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, Px_tot, Py_tot, Pz_tot,
+                               Mx_tot, My_tot, Mz_tot, Pxb_tot, Pyb_tot, Pzb_tot, Mxb_tot, Myb_tot, Mzb_tot, er_tot, mur_tot, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.streaming(f_tot, fb_tot, Px_tot, Py_tot, Pz_tot, Mx_tot, My_tot, Mz_tot, Pxb_tot, Pyb_tot, Pzb_tot, Mxb_tot, Myb_tot, Mzb_tot, Ny, Nx, Q)
     else:
 
         # calculation of scattered fields
@@ -265,12 +203,19 @@ for t in range(int(Time)):
         Hx_scat = Hx_tot - Hx_inc
         Hy_scat = Hy_tot - Hy_inc
 
+        Ez_scat[scatterer] = 0
+        Hx_scat[scatterer] = 0
+        Hy_scat[scatterer] = 0
+
         
         # collision and streaming (the 2 steps of LBM) when field is not forced
-        myclib.collStream(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q)
-        myclib.collStream(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q)
-        myclib.streaming(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ny, Nx, Q)
-        myclib.streaming(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ny, Nx, Q)
+        myclib.collNotForcingNode(f_inc, fb_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, Px_inc, Py_inc, Pz_inc,
+                               Mx_inc, My_inc, Mz_inc, Pxb_inc, Pyb_inc, Pzb_inc, Mxb_inc, Myb_inc, Mzb_inc, er_inc, mur_inc, Ny, Nx, Q)
+        myclib.streaming(f_inc, fb_inc, Px_inc, Py_inc, Pz_inc, Mx_inc, My_inc, Mz_inc, Pxb_inc, Pyb_inc, Pzb_inc, Mxb_inc, Myb_inc, Mzb_inc, Ny, Nx, Q)
+
+        myclib.collNotForcingNode(f_tot, fb_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, Px_tot, Py_tot, Pz_tot,
+                               Mx_tot, My_tot, Mz_tot, Pxb_tot, Pyb_tot, Pzb_tot, Mxb_tot, Myb_tot, Mzb_tot, er_tot, mur_tot, Ny, Nx, Q)
+        myclib.streaming(f_tot, fb_tot, Px_tot, Py_tot, Pz_tot, Mx_tot, My_tot, Mz_tot, Pxb_tot, Pyb_tot, Pzb_tot, Mxb_tot, Myb_tot, Mzb_tot, Ny, Nx, Q)
         
     ###############################################################################################################
    

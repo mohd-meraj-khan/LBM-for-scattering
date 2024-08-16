@@ -10,6 +10,9 @@ from Module_Traction import tractionFx, tractionFy, tractionFz
 from Module_EM_Wave import planeWaveTM
 import Module_Geometry
 
+from parameters import *
+from Shared_Lib import *
+
 
 t0 = time.time()
 
@@ -20,27 +23,6 @@ if not os.path.exists(directory):
 
 
 
-
-# Accessing command line arguments
-parameters = sys.argv
-
-
-######################
-
-
-a, ratio = 25, 0.95   # ratio = a / wavelength
-n = 4
-Nx, Ny = n*a, n*a  # size of the computational domain
-
-er1, mur1, er2, er3 = 1, 1, 4, 5   # material properties i.e. permittivity and permeabilty
-
-
-#############################
-# boundary of EM wave source
-xloc = 0
-ymin = 0
-ymax = Ny
-#############################
 
 
 ######################
@@ -57,9 +39,6 @@ omega = 2 * np.pi / period
 ###############################
 
 
-
-noOfPeriods = 1
-noOfReflections = 30
 
 Time = 3 * (Nx * np.sqrt(er1) + noOfReflections * 2 * a * np.sqrt(er2)) + noOfPeriods * period
 
@@ -86,7 +65,9 @@ def initilize_dis_func(Ny=10, Nx=10, Q=7):
     return np.zeros((Ny, Nx, Q), dtype=np.float32, order='C')
 
 ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
+exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
 ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
+exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
 
 
 # initilizing the domain properties
@@ -105,8 +86,8 @@ er_tot, mur_tot = initialize_material_properties(er1, mur1, Ny, Nx)
 ################################################################
 ################### for interpolation ##########################
 
-dtheta = 0.1
-theta = np.arange(0, 360 + 0.01, dtheta)
+dtheta = 1
+theta = np.arange(0, 180 + 0.01, dtheta)
 
 # surface normal (the integration is done at a circle enclosing the scatterer)
 nx = np.cos(theta*np.pi/180)
@@ -133,14 +114,14 @@ cx = Nx//2 + 0.5
 cy = Ny//2 + 0.5
 
 # converting to polar coordinates
-ModuleGeometry.carToPolar(r, phi, Ny, Nx, cy, cx)
+Module_Geometry.carToPolar(r, phi, Ny, Nx, cy, cx)
 
 # scatterer particle
-scatterer = ModuleGeometry.circle(r, a, Ny, Nx)
+scatterer = Module_Geometry.circle(r, a, Ny, Nx)
 
 er_tot[scatterer] = er2
 
-# coordinates where RCS is being calculated
+# coordinates where traction vector is being calculated
 R = np.array([2, 3, 4, 5])*a
 
 X_polar1 = R[0] * np.cos(theta*np.pi/180) + Nx//2 + 0.5
@@ -162,38 +143,8 @@ Y_polar4 = R[3] * np.sin(theta*np.pi/180) + Ny//2 + 0.5
 
 
 
-###############################################################################################################
-########                                           SHARED LIBRARY                                   ###########
-###############################################################################################################
-
-# loading the shared file (c library)
-path = os.getcwd()
-myclib = CDLL(os.path.join(path, "LBM_Sequential.so"))
-
-# defining 3D and 4D pointers (LBM runs in C, for that pointer is needed)
-P2D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=2, flags="C")
-P3D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=3, flags="C")
-
-# calculation of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.macroField.argtypes = [P3D, P2D, P2D, c_int, c_int, c_int]
-myclib.macroField.restype  = None
-
-# initilization of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.initializeField.argtypes = [P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int]
-myclib.initializeField.restype  = None
-
-# collision and streaming (FUNCTION PROTOTYPE)
-myclib.collStream.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int]
-myclib.collStream.restype  = None
-
-myclib.collStreamForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int, c_int, c_int, c_int]
-myclib.collStreamForcingNode.restype  = None
-
-###############################################################################################################
-
 
 t1 = time.time()
-
 
 
 Ez_scat_interp1 = []
@@ -203,8 +154,6 @@ Ez_scat_interp4 = []
 
 
 for t in range(int(Time)):
-
-    
 
 
 
@@ -250,8 +199,10 @@ for t in range(int(Time)):
 
 
         # collision and streaming (the 2 steps of LBM) when field is forced
-        myclib.collStreamForcingNode(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q, xloc, ymin, ymax)
-        myclib.collStreamForcingNode(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.collForcingNode(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.collForcingNode(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q, xloc, ymin, ymax)
+        myclib.streaming(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ny, Nx, Q)
+        myclib.streaming(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ny, Nx, Q)
 
     else:
 
@@ -262,13 +213,12 @@ for t in range(int(Time)):
 
         
         # collision and streaming (the 2 steps of LBM) when field is not forced
-        myclib.collStream(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q)
-        myclib.collStream(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q)
+        myclib.collStream(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ex_inc, Ey_inc, Ez_inc, Hx_inc, Hy_inc, Hz_inc, er_inc, mur_inc, Ny, Nx, Q)
+        myclib.collStream(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ex_tot, Ey_tot, Ez_tot, Hx_tot, Hy_tot, Hz_tot, er_tot, mur_tot, Ny, Nx, Q)
+        myclib.streaming(ex_inc, ey_inc, ez_inc, hx_inc, hy_inc, hz_inc, exb_inc, eyb_inc, ezb_inc, hxb_inc, hyb_inc, hzb_inc, Ny, Nx, Q)
+        myclib.streaming(ex_tot, ey_tot, ez_tot, hx_tot, hy_tot, hz_tot, exb_tot, eyb_tot, ezb_tot, hxb_tot, hyb_tot, hzb_tot, Ny, Nx, Q)
         
     ###############################################################################################################
-
-
-
    
     
 
@@ -301,7 +251,6 @@ t3 = time.time()
 total_time = (t3 - t0) / 60
 print(f"\nTotal time taken: {total_time:.2f} minutes")
 ###############################################################################################################
-
 
 
 EzScat1 = open(directory+"/Ez_scat1.txt", "w")

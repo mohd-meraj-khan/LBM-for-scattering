@@ -17,6 +17,9 @@ from Module_Traction import tractionFx, tractionFy, tractionFz
 from Module_EM_Wave import planeWaveTM
 import Module_Geometry
 
+from parameters import *
+from Shared_Lib import *
+
 
 t0 = time.time()
 
@@ -26,27 +29,6 @@ if not os.path.exists(pictures):
 
 
 
-
-# Accessing command line arguments
-parameters = sys.argv
-
-
-######################
-
-
-a, ratio = 250, 0.5   # ratio = a / wavelength
-n = 4
-Nx, Ny = n*a, n*a  # size of the computational domain
-
-er1, mur1, er2, er3 = 1, 1, 2, 5   # material properties i.e. permittivity and permeabilty
-
-
-#############################
-# boundary of EM wave source
-xloc = 0
-ymin = 0
-ymax = Ny
-#############################
 
 
 ######################
@@ -64,8 +46,6 @@ omega = 2 * np.pi / period
 
 
 
-noOfPeriods = 1
-noOfReflections = 0
 
 Time = 3 * (Nx * np.sqrt(er1) + noOfReflections * 2 * a * np.sqrt(er2)) + noOfPeriods * period
 
@@ -129,40 +109,6 @@ er[scatterer] = er2
 
 
 
-
-###############################################################################################################
-########                                           SHARED LIBRARY                                   ###########
-###############################################################################################################
-
-# loading the shared file (c library)
-path = os.getcwd()
-myclib = CDLL(os.path.join(path, "LBM_parallel.so"))
-
-# defining 2D and 3D pointers (LBM runs in C, for that pointer is needed)
-P2D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=2, flags="C")
-P3D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=3, flags="C")
-
-# calculation of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.macroField.argtypes = [P3D, P2D, P2D, c_int, c_int, c_int]
-myclib.macroField.restype  = None
-
-# initilization of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.initializeField.argtypes = [P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int]
-myclib.initializeField.restype  = None
-
-# collision and streaming (FUNCTION PROTOTYPE)
-myclib.collNotForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int]
-myclib.collNotForcingNode.restype  = None
-
-
-myclib.collForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int, c_int, c_int, c_int]
-myclib.collForcingNode.restype  = None
-
-
-myclib.streaming.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, c_int, c_int, c_int]
-myclib.streaming.restype  = None
-
-###############################################################################################################
 
 
 t1 = time.time()

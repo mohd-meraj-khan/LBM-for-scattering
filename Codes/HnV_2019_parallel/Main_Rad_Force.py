@@ -10,8 +10,12 @@ from Module_Traction import tractionFx, tractionFy, tractionFz
 from Module_EM_Wave import planeWaveTM
 import Module_Geometry
 
+from parameters import *
+from Shared_Lib import *
+
 
 t0 = time.time()
+
 
 
 directory = 'data'
@@ -20,35 +24,10 @@ if not os.path.exists(directory):
 
 
 
-
-# Accessing command line arguments
-parameters = sys.argv
-
-ratio = 0.5 #float(parameters[1])
-
-######################
-
-#ratio = 0.95   # ratio = a / wavelength
-
-a  = 25
-n = 4
-Nx, Ny = n*a, n*a  # size of the computational domain
-
-er1, mur1, er2, er3 = 1, 1, 4, 5   # material properties i.e. permittivity and permeabilty
-
-
-#############################
-# boundary of EM wave source
-xloc = 0
-ymin = 0
-ymax = Ny
-#############################
-
-
 ######################
 # LBM properties (DO NOT CHANGE)
-Q = 7               # number of velocities at a grid
-velocity = 1.0/3    # velocity of EM wave in vacuum
+Q = 12               # number of velocities at a grid
+velocity = 1.0/2    # velocity of EM wave in vacuum
 ######################
 
 
@@ -60,8 +39,6 @@ omega = 2 * np.pi / period
 
 
 
-noOfPeriods = 1
-noOfReflections = 30
 
 Time = 3 * (Nx * np.sqrt(er1) + noOfReflections * 2 * a * np.sqrt(er2)) + noOfPeriods * period
 
@@ -80,13 +57,17 @@ def initialize_field(Ny=10, Nx=10):
 
 Ex, Ey, Ez, Hx, Hy, Hz = [initialize_field(Ny, Nx) for _ in range(6)]
 
+Px, Py, Pz, Mx, My, Mz = [initialize_field(Ny, Nx) for _ in range(6)]
+
+Pxb, Pyb, Pzb, Mxb, Myb, Mzb = [initialize_field(Ny, Nx) for _ in range(6)]
+
 
 # initializing the distribution functions of electric and magnetic fields
-def initilize_dis_func(Ny=10, Nx=10, Q=7):
+def initilize_dis_func(Ny=10, Nx=10, Q=12):
     return np.zeros((Ny, Nx, Q), dtype=np.float32, order='C')
 
-ex, ey, ez, hx, hy, hz = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
-exb, eyb, ezb, hxb, hyb, hzb = [initilize_dis_func(Ny, Nx, Q) for _ in range(6)]
+f, fb = [initilize_dis_func(Ny, Nx, Q) for _ in range(2)]
+
 
 
 # initilizing the domain properties
@@ -96,7 +77,7 @@ def initialize_material_properties(er1=1, mur1=1, Ny=10, Nx=10):
     return
 
 er, mur = initialize_material_properties(er1, mur1, Ny, Nx)
-###############################################################################################################
+#############################################################################################################
 
 
 
@@ -132,10 +113,10 @@ cx = Nx//2 + 0.5
 cy = Ny//2 + 0.5
 
 # converting to polar coordinates
-ModuleGeometry.carToPolar(r, phi, Ny, Nx, cy, cx)
+Module_Geometry.carToPolar(r, phi, Ny, Nx, cy, cx)
 
 # scatterer particle
-scatterer = ModuleGeometry.circle(r, a, Ny, Nx)
+scatterer = Module_Geometry.circle(r, a, Ny, Nx)
 
 er[scatterer] = er2
 
@@ -148,41 +129,6 @@ Y_polar = R * np.sin(theta*np.pi/180) + cy
 
 
 
-
-
-###############################################################################################################
-########                                           SHARED LIBRARY                                   ###########
-###############################################################################################################
-
-# loading the shared file (c library)
-path = os.getcwd()
-myclib = CDLL(os.path.join(path, "LBM.so"))
-
-# defining 3D and 4D pointers (LBM runs in C, for that pointer is needed)
-P2D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=2, flags="C")
-P3D = np.ctypeslib.ndpointer(dtype=np.float32, ndim=3, flags="C")
-
-# calculation of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.macroField.argtypes = [P3D, P2D, P2D, c_int, c_int, c_int]
-myclib.macroField.restype  = None
-
-# initilization of macroscopic fields (FUNCTION PROTOTYPE)
-myclib.initializeField.argtypes = [P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int]
-myclib.initializeField.restype  = None
-
-# collision and streaming (FUNCTION PROTOTYPE)
-myclib.collNotForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int]
-myclib.collNotForcingNode.restype  = None
-
-
-myclib.collForcingNode.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, P2D, c_int, c_int, c_int, c_int, c_int, c_int]
-myclib.collForcingNode.restype  = None
-
-
-myclib.streaming.argtypes = [P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, P3D, c_int, c_int, c_int]
-myclib.streaming.restype  = None
-
-###############################################################################################################
 
 
 t1 = time.time()
@@ -203,17 +149,9 @@ for t in range(int(Time)):
     ########                                         LBM CALCULATION                                          #######
     #################################################################################################################
 
-    # initialization of macroscopic fields
-    myclib.initializeField(Ex, Ey, Ez, Hx, Hy, Hz, Ny, Nx)
-
     # computation of macroscopic fields from distribution function
-    myclib.macroField(ex, er, Ex, Ny, Nx, Q)
-    myclib.macroField(ey, er, Ey, Ny, Nx, Q)
-    myclib.macroField(ez, er, Ez, Ny, Nx, Q)
+    myclib.macroField(f, Ex, Ey, Ez, Hx, Hy, Hz, Px, Py, Pz, Mx, My, Mz, er, mur, Ny, Nx, Q, N)
 
-    myclib.macroField(hx, mur, Hx, Ny, Nx, Q)
-    myclib.macroField(hy, mur, Hy, Ny, Nx, Q)
-    myclib.macroField(hz, mur, Hz, Ny, Nx, Q)
 
     
     if (t >= 0):
@@ -222,18 +160,19 @@ for t in range(int(Time)):
         planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax)
 
         # collision and streaming (the 2 steps of LBM) when field is forced
-        myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, xloc, ymin, ymax)
-        myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q)
+        myclib.collForcingNode(f, fb, Ex, Ey, Ez, Hx, Hy, Hz, Px, Py, Pz, Mx, My, Mz, Pxb, Pyb, Pzb, Mxb, Myb, Mzb, er, mur, Ny, Nx, Q, xloc, ymin, ymax, N)
+        myclib.streaming(f, fb, Px, Py, Pz, Mx, My, Mz, Pxb, Pyb, Pzb, Mxb, Myb, Mzb, Ny, Nx, Q, N)
+        
 
     else:
         
         # collision and streaming (the 2 steps of LBM) when field is not forced
-        myclib.collNotForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q)
-        myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q)
+        myclib.collNotForcingNode(f, fb, Ex, Ey, Ez, Hx, Hy, Hz, Px, Py, Pz, Mx, My, Mz, Pxb, Pyb, Pzb, Mxb, Myb, Mzb, er, mur, Ny, Nx, Q, N)
+        myclib.streaming(f, fb, Px, Py, Pz, Mx, My, Mz, Pxb, Pyb, Pzb, Mxb, Myb, Mzb, Ny, Nx, Q, N)
         
     ###############################################################################################################
 
-
+   
     
     if (t >= int(Time) - int(np.round(period))):
 

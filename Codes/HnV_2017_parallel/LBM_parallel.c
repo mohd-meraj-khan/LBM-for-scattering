@@ -7,7 +7,7 @@
 #define W 1.0/6.0
 
 // number of threads in parallel
-int N = 2;
+int N = 1;
 
 
 int V[21] = {0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1};
