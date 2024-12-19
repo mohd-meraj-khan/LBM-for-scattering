@@ -3,7 +3,7 @@
 ## A parallel lattice Boltzmann solver for scattering and radiation force calculations
 
 The solver employs the Lattice Boltzmann Method (LBM) as outlined by [Hauser and Verhey](https://doi.org/10.1103/PhysRevE.96.063306). 
-To optimize performance, the LBM code is implemented in C and interfaced with Python using <b>ctypes</b>. Python was chosen for its ease of development and extensive library support. Additionally, OpenMP is utilized to parallelize the code for enhanced efficiency.
+To optimize performance, the LBM code is implemented in C and interfaced with Python using <b>ctypes</b>. Python was chosen for its ease of development and extensive library support. Additionally, <b>OpenMP</b> is utilized to parallelize the code for enhanced efficiency.
 
 The solver is currently designed to compute radar cross-section (RCS) and radiation force for both 2D and 3D geometries under incident plane TM and TE waves. It operates effectively across all three scattering regimes: Rayleigh, Mie, and geometrical optics.
 
