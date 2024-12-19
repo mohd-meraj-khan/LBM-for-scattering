@@ -1,0 +1,96 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+import sys
+import os
+
+
+directory = 'data'
+
+
+
+ratio = [2, 4]
+
+er2 = 2
+
+dphi = 1
+phi = np.arange(0, 180 + 0.001, dphi)
+
+dR = 0.1
+R = np.arange(2, 5 + 0.001, dR)
+RLBM = [2, 3, 4, 5]
+
+
+
+BRCS_LBM = []
+MRCS_LBM = np.zeros((len(ratio), len(RLBM)))
+
+BRCS_exact = []
+MRCS_exact = []
+
+
+for i in range (len(ratio)):
+    for j in range(len(RLBM)):
+        MRCS_LBM[i, j] = np.loadtxt(directory+'/MRCS_LBM{}_{}.txt'.format(RLBM[j], ratio[i]))
+
+
+for i in range (len(ratio)):
+    BRCS_LBM.append(np.loadtxt(directory+'/BRCS_LBM5_{}.txt'.format(ratio[i])))
+    
+    BRCS_exact.append(np.loadtxt(directory+'/BRCS_exact_{}.txt'.format(ratio[i])))
+    MRCS_exact.append(np.loadtxt(directory+'/MRCS_exact_{}.txt'.format(ratio[i])))
+
+##MRCS_exact.append(np.loadtxt(directory+'/MRCS_exact_PEC.txt'))
+
+
+###################################
+
+
+plt.clf()
+
+plt.rc('font', family = 'serif', size = 10)
+plt.rc('xtick', labelsize = 10)
+plt.rc('ytick', labelsize = 10)
+plt.rc('lines', markersize = 2, lw = 0.75)
+plt.rc('text', usetex = True)
+
+
+
+
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize = (3.35, 2), dpi=600, constrained_layout = True)
+
+ax1 = ax.inset_axes([0.35, 0.8, 0.35, 0.18])
+
+plt.plot(phi, BRCS_exact[0], 'm-')
+plt.plot(phi, BRCS_exact[1], color='dimgrey', linestyle='-')
+plt.plot(phi, BRCS_LBM[0], 'm--')
+plt.plot(phi, BRCS_LBM[1], color='dimgrey', linestyle='--')
+
+
+ax1.plot(R, MRCS_exact[0], 'm-')
+ax1.plot(R, MRCS_exact[1], color='dimgrey', linestyle='-')
+ax1.plot(RLBM, MRCS_LBM[0], 'mo')
+ax1.plot(RLBM, MRCS_LBM[1], color='dimgrey', linestyle='none', marker='o')
+
+
+ax1.set_xlabel(r'$r/a$')
+
+ax1.set_yscale('log')
+
+plt.xticks([0, 30, 60, 90, 120, 150, 180])
+
+
+
+
+plt.xlabel(r'$\phi (^o)$')
+plt.ylabel(r'$\sigma / \lambda$')
+
+
+
+plt.yscale('log')
+
+    
+plt.savefig('RCS_Mie_er_{}.svg'.format(er2))
+plt.close()
+################################################################################
