@@ -175,7 +175,7 @@ https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/50ba4aed-
 https://github.com/mohd-meraj-khan/LBM-for-scattering/assets/153921085/56dc300e-422f-4ac4-b635-2bb6ea705f3e
 
 ## Related publications
-[Electromagnetic scattering by curved surfaces and calculation of radiation force: Lattice Boltzmann simulations]([https://website-name.com](https://doi.org/10.1063/5.0234413))
+[Electromagnetic scattering by curved surfaces and calculation of radiation force: Lattice Boltzmann simulations](https://doi.org/10.1063/5.0234413)
 
 
 
