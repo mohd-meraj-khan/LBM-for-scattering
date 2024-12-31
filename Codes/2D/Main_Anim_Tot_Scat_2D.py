@@ -103,7 +103,7 @@ with writer.saving(fig, Video_Name,300):
         myclib.macroField(hz, mur, Hz, Ny, Nx, Q, N)
 
 
-        if (t >= 0):
+        if (t <= period):
             
             '''source wave'''
             planeWaveTM(EzI, HyI, t, omega, xloc, ymin, ymax)
@@ -111,13 +111,16 @@ with writer.saving(fig, Video_Name,300):
 
 
             '''calculation of scattered fields'''
+            Ex_scat = Ex - ExI
+            Ey_scat = Ey - EyI
             Ez_scat = Ez - EzI
             Hx_scat = Hx - HxI
             Hy_scat = Hy - HyI
+            Hz_scat = Hz - HzI
 
-            Ez_scat[scatterer] = 0
-            Hx_scat[scatterer] = 0
-            Hy_scat[scatterer] = 0
+##            Ez_scat[scatterer] = 0
+##            Hx_scat[scatterer] = 0
+##            Hy_scat[scatterer] = 0
 
             '''collision and streaming (the 2 steps of LBM) when field is forced'''
             myclib.collForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Ny, Nx, Q, xloc, ymin, ymax, N)
@@ -127,7 +130,16 @@ with writer.saving(fig, Video_Name,300):
 
 
 
-        else:    
+        else:
+
+            Ex_scat = Ex - ExI
+            Ey_scat = Ey - EyI
+            Ez_scat = Ez - EzI
+            Hx_scat = Hx - HxI
+            Hy_scat = Hy - HyI
+            Hz_scat = Hz - HzI
+
+            
             '''collision and streaming (the 2 steps of LBM) when field is not forced'''
             myclib.collNotForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Ny, Nx, Q, N)
             myclib.collNotForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, N)
@@ -161,7 +173,7 @@ with writer.saving(fig, Video_Name,300):
                         
             ax1 = fig.add_subplot(gs[0,0])
             plt.title(r'$E_z^{tot}$')
-            im1 = plt.imshow(Ez, cmap='seismic', origin='lower')
+            im1 = plt.imshow(Ez, vmin = -1, vmax = 1, cmap='seismic', origin='lower')
             im = plt.imshow(er, extent=(0, Nx, 0, Ny), cmap='binary', origin='lower', alpha=0.1)
             
             ax1.set_xticks(np.linspace(0,Nx,4))
@@ -175,7 +187,7 @@ with writer.saving(fig, Video_Name,300):
         
             ax2 = fig.add_subplot(gs[0,1])
             plt.title(r'$E_z^{scat}$')           
-            im2 = plt.imshow(Ez_scat, cmap='seismic', origin='lower')
+            im2 = plt.imshow(Ez_scat, vmin = -1, vmax = 1, cmap='seismic', origin='lower')
             plt.imshow(er, extent=(0, Nx, 0, Ny), cmap='binary', origin='lower', alpha=0.1)
             
             ax2.set_xticks(np.linspace(0,Nx,4))

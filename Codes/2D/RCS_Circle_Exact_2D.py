@@ -18,9 +18,9 @@ if not os.path.exists(directory):
 
 
 
-ratio = 0.95
+ratio = 0.5
 
-er2 = 4
+er2 = 2
 
 
 r = 100
@@ -78,9 +78,9 @@ for i in range(len(phi)):
 
 ###################################
 
-rcs = open(directory+"/BRCS_exact_{}.txt".format(ratio), "w")
-np.savetxt(rcs, BRCS)
-rcs.close()
+np.save(directory+"/BRCS_exact_{}.npy".format(ratio), BRCS)
+##np.savetxt(rcs, BRCS)
+##rcs.close()
 
 ###################################################################################
 
@@ -130,7 +130,6 @@ for i in range(len(R)):
 #############################
 
 
-rcs = open(directory+"/MRCS_exact_{}.txt".format(ratio), "w")
-np.savetxt(rcs, MRCS)
-rcs.close()
+np.save(directory+"/MRCS_exact_{}.npy".format(ratio), MRCS)
+
 ################################################################################

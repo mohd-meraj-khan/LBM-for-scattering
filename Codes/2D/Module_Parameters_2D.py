@@ -15,8 +15,8 @@ parameters = sys.argv
 theta = 45
 ######################
 
-a, ratio = 100, 0.95   # ratio = a / wavelength
-n = 4
+a, ratio = 25, 0.5   # ratio = a / wavelength
+n = 6
 Nx, Ny = n*a, n*a  # size of the computational domain
 
 er1, mur1, er2, er3 = 1, 1, 4, 10000   # material properties i.e. permittivity and permeabilty
@@ -101,6 +101,9 @@ Right  = np.arange(int(cy - w), int(cy + w)), int(cx + w)
 Bottom = int(cy - w), np.arange(int(cx - w), int(cx + w))
 Left   = np.arange(int(cy - w), int(cy + w)), int(cx - w)
 
+
+
+
 '''unit normal vectors at the perimeter of the bounding box'''
 nxTop, nxRight, nxBottom, nxLeft = 0, 1, 0, -1
 nyTop, nyRight, nyBottom, nyLeft = 1, 0, -1, 0
@@ -113,7 +116,7 @@ nzTop, nzRight, nzBottom, nzLeft = 0, 0,  0, 0
 
 
 noOfPeriods = 0
-noOfReflections = 200
+noOfReflections = 10
 
 
 '''number of time steps the code will run'''

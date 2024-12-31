@@ -4,11 +4,20 @@ import numpy as np
 
 #################################################################
 
-def carToPolar(r, phi, Ny=10, Nx=10, cy=0, cx=0):
-    for i in range(Ny):
-        for j in range(Nx):
-            r[i, j] = np.sqrt((i - cy)**2 + (j - cx)**2)
-            phi[i, j] = np.arctan2((i - cy), (j - cx))   
+def carToPolar(Ny=10, Nx=10, cy=0, cx=0):
+
+    x = np.arange(Nx)
+    y = np.arange(Ny)
+
+    Y, X = np.meshgrid(y, x, indexing='ij')
+
+    X_shifted = X - cx
+    Y_Shifted = Y - cy
+    
+    r = np.sqrt(X_shifted**2 + Y_Shifted**2)
+    phi = np.arctan2(Y_Shifted, X_shifted)
+
+    return r, phi
 #################################################################
 
 
@@ -17,9 +26,10 @@ def carToPolar(r, phi, Ny=10, Nx=10, cy=0, cx=0):
 
 def circle(r, a, Ny=10, Nx=10):
     inside = np.zeros((Ny, Nx), dtype=bool)
+
     for i in range(Ny):
         for j in range(Nx):
-            if r[i, j] <= a:
+            if (r[i, j] <= a):
                 inside[i, j] = True
     return inside
 #################################################################
@@ -27,31 +37,17 @@ def circle(r, a, Ny=10, Nx=10):
 
 
 
-###################################################################
-##
-##def circle(r, a, Ny=10, Nx=10, er1, er2, er):
-##    er = 
-##    inside = np.zeros((Ny, Nx), dtype=bool)
-##    for i in range(Ny):
-##        for j in range(Nx):
-##            if r[i, j] <= a:
-##                inside[i, j] = True
-##    return inside
-###################################################################
-
-
-
-
-
-
 #################################################################
 
-def square(a, Ny=10, Nx=10, cy=0, cx=0):
+def square(a, Ny=10, Nx=10, cy=0, cx=0, theta=0):
     inside = np.zeros((Ny, Nx), dtype=bool)
+    d2r = np.pi/180
+    
     for i in range(Ny):
         for j in range(Nx):
-            Y = i - cy
-            X = j - cx
+            Y = np.sin(theta*d2r)*(j - cx) + np.cos(theta*d2r)*(i - cy)
+            X = np.cos(theta*d2r)*(j - cx) - np.sin(theta*d2r)*(i - cy)
+    
             if (X <= a and X >= -a and Y <= a and Y >= -a):
                 inside[i, j] = True
     return inside
@@ -62,14 +58,49 @@ def square(a, Ny=10, Nx=10, cy=0, cx=0):
 
 #################################################################
 
-def rectangle(a, b, theta, Ny=10, Nx=10, cy=0, cx=0):
+def rectangle(a, b, Ny=10, Nx=10, cy=0, cx=0, theta=0):
     inside = np.zeros((Ny, Nx), dtype=bool)
+    d2r = np.pi/180
+    
     for i in range(Ny):
         for j in range(Nx):
-            Y = np.cos(theta)*(j - cx) - np.sin(theta)*(i - cy)
-            X = np.sin(theta)*(j - cx) + np.cos(theta)*(i - cy)
-            if (X <= b and X >= -b and Y <= a and Y >= -a):
+            Y = np.sin(theta*d2r)*(j - cx) + np.cos(theta*d2r)*(i - cy)
+            X = np.cos(theta*d2r)*(j - cx) - np.sin(theta*d2r)*(i - cy)
+    
+            if (X <= a and X >= -a and Y <= b and Y >= -b):
                 inside[i, j] = True
+    return inside
+#################################################################
+
+
+
+
+#################################################################
+
+def normalWall(Ny=10, Nx=10, cx=0):
+    inside = np.zeros((Ny, Nx), dtype=bool)
+    d2r = np.pi/180
+    
+    for j in range(Nx):
+        X = (j - cx)
+        if (X >= 0):
+            inside[:, j] = True
+    return inside
+#################################################################
+
+
+
+
+#################################################################
+
+def slab(a, Ny=10, Nx=10, cx=0):
+    inside = np.zeros((Ny, Nx), dtype=bool)
+    d2r = np.pi/180
+    
+    for j in range(Nx):
+        X = (j - cx)
+        if (X >= 0 and X <= a):
+            inside[:, j] = True
     return inside
 #################################################################
 
@@ -88,6 +119,22 @@ def hexagon(a, Ny=10, Nx=10, cy=0, cx=0):
                 inside[i, j] = True
     return inside
 #################################################################   
+
+
+
+
+#################################################################
+
+def ellepse(a, b, Ny=10, Nx=10, cy=0, cx=0, theta=0):
+    inside = np.zeros((Ny, Nx), dtype=bool)
+    for i in range(Ny):
+        for j in range(Nx):
+            X = np.cos(theta)*(j - cx) - np.sin(theta)*(i - cy)
+            Y = np.sin(theta)*(j - cx) + np.cos(theta)*(i - cy)
+            if (X**2 / a**2 + Y**2 / b**2 <= 1):
+                inside[i, j] = True
+    return inside
+#################################################################
 
 
 
@@ -123,37 +170,6 @@ def JanusHalf(r, a, theta, Ny=10, Nx=10, cy=0, cx=0):
     return first_half, second_half
 #################################################################
 
-
-
-
-#################################################################
-
-##def JanusHalf(r, er, a, theta, er2, er3, Ny=10, Nx=10, cy=0, cx=0):
-##    for i in range(Ny):
-##        for j in range(Nx):
-##            Y = i - cy
-##            X = j - cx
-##            if (theta == 0 or theta == 360):
-##                if (r[i, j] <= a and X <= 0):
-##                    er[i, j]  = er2
-##                elif (r[i, j] <= a and X > 0):
-##                    er[i, j]  = er3
-##            elif (theta == 180):
-##                if (r[i, j] <= a and X >= 0):
-##                    er[i, j]  = er2
-##                elif (r[i, j] <= a and X < 0):
-##                    er[i, j]  = er3
-##            elif (0 < theta < 180):
-##                if (r[i, j] <= a and Y >= X * np.tan(np.pi/2 - theta * np.pi/180)):
-##                    er[i, j]  = er2
-##                elif (r[i, j] <= a and Y < X * np.tan(np.pi/2 - theta * np.pi/180)):
-##                    er[i, j]  = er3
-##            elif (180 < theta < 360):
-##                if (r[i, j] <= a and Y <= X * np.tan(3*np.pi/2 - theta * np.pi/180)):
-##                    er[i, j]  = er2
-##                elif (r[i, j] <= a and Y > X * np.tan(3*np.pi/2 - theta * np.pi/180)):
-##                    er[i, j]  = er3
-#################################################################
 
 
 

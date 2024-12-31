@@ -89,7 +89,7 @@ with writer.saving(fig, Video_Name,300):
         myclib.macroField(hz, mur, Hz, Ny, Nx, Q, N)
 
         
-        if (t >= 0):
+        if (t <= period):
             
             '''source wave'''
             planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax)

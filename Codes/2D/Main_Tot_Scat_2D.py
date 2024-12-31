@@ -159,16 +159,16 @@ print(f"\nTotal time taken: {total_time:.2f} minutes")
 ###############################################################################################################
 
 
-np.save(directory+"/Ex_{}.txt".format(ratio), Ex_phasor)
-np.save(directory+"/Ey_{}.txt".format(ratio), Ey_phasor)
-np.save(directory+"/Ez_{}.txt".format(ratio), Ez_phasor)
+np.save(directory+"/Ex_{}.npy".format(ratio), Ex_phasor)
+np.save(directory+"/Ey_{}.npy".format(ratio), Ey_phasor)
+np.save(directory+"/Ez_{}.npy".format(ratio), Ez_phasor)
 
-np.save(directory+"/Hx_{}.txt".format(ratio), Hx_phasor)
-np.save(directory+"/Hy_{}.txt".format(ratio), Hy_phasor)
-np.save(directory+"/Hz_{}.txt".format(ratio), Hz_phasor)
+np.save(directory+"/Hx_{}.npy".format(ratio), Hx_phasor)
+np.save(directory+"/Hy_{}.npy".format(ratio), Hy_phasor)
+np.save(directory+"/Hz_{}.npy".format(ratio), Hz_phasor)
 
 
 #####################
 
-np.save(directory+"/energy_{}.txt".format(ratio), U)
+np.save(directory+"/energy_{}.npy".format(ratio), U)
 

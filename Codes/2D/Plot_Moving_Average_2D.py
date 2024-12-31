@@ -30,11 +30,11 @@ if not os.path.exists(plots):
 
 
 
-u  = np.load(directory+"/energy_{}.txt".format(ratio))
+u  = np.load(directory+"/energy_{}.npy".format(ratio))
 
-fx = np.load(directory+"/FxIns_{}.txt".format(ratio))
-fy = np.load(directory+"/FyIns_{}.txt".format(ratio))
-tz = np.load(directory+"/TzIns_{}.txt".format(ratio))
+fx = np.load(directory+"/FxIns_{}.npy".format(ratio))
+fy = np.load(directory+"/FyIns_{}.npy".format(ratio))
+tz = np.load(directory+"/TzIns_{}.npy".format(ratio))
 
 
 maEnergy = []

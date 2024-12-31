@@ -231,8 +231,7 @@ RCS = 2*np.pi*rho0/wavelength*Ez_far[:, 1]**2
 
 
 
-brcsFar = open(directory+"/RCS_LBM_{}.txt".format(ratio), "w")
-np.savetxt(brcsFar, RCS)
-brcsFar.close()
+np.save(directory+"/RCS_LBM_{}.npy".format(ratio), RCS)
+
 
 
