@@ -7,15 +7,26 @@ from Module_Shared_Lib_2D import *
 t0 = time.time()
 
 
-directory = 'data'
-if not os.path.exists(directory):
-    os.makedirs(directory)
+directory_scattered = 'data/scattered_field'
+if not os.path.exists(directory_scattered):
+    os.makedirs(directory_scattered)
+
+directory_total = 'data/total_field'
+if not os.path.exists(directory_total):
+    os.makedirs(directory_total)
 
 
+directory_energy = 'data/energy'
+if not os.path.exists(directory_energy):
+    os.makedirs(directory_energy)
 
 
-print("Number of time steps :", int(Time))
+print('\n')
+print(f'ratio : {ratio}')
+print(f'Number of parallel threads :{N}')
+print(f'Number of time steps :{Time}')
 
+print(f"Size of the computational domain: {Ny} * {Nx}\n")
 
 
 
@@ -49,12 +60,20 @@ erI, murI = initialize_material_properties(er1, mur1, Ny, Nx)
 
 
 '''initilizing the variables for frequency domain fields'''
-Ex_phasor = np.zeros_like(Ex, dtype=complex)
-Ey_phasor = np.zeros_like(Ey, dtype=complex)
-Ez_phasor = np.zeros_like(Ez, dtype=complex)
-Hx_phasor = np.zeros_like(Hx, dtype=complex)
-Hy_phasor = np.zeros_like(Hy, dtype=complex)
-Hz_phasor = np.zeros_like(Hz, dtype=complex)
+ExScat = np.zeros_like(Ex, dtype=complex)
+EyScat = np.zeros_like(Ey, dtype=complex)
+EzScat = np.zeros_like(Ez, dtype=complex)
+HxScat = np.zeros_like(Hx, dtype=complex)
+HyScat = np.zeros_like(Hy, dtype=complex)
+HzScat = np.zeros_like(Hz, dtype=complex)
+
+ExTot  = np.zeros_like(Ex, dtype=complex)
+EyTot  = np.zeros_like(Ey, dtype=complex)
+EzTot  = np.zeros_like(Ez, dtype=complex)
+HxTot  = np.zeros_like(Hx, dtype=complex)
+HyTot  = np.zeros_like(Hy, dtype=complex)
+HzTot  = np.zeros_like(Hz, dtype=complex)
+
 
 
 U = np.zeros(Time)
@@ -95,37 +114,33 @@ for t in range(int(Time)):
     myclib.macroField(hy, mur, Hy, Ny, Nx, Q, N)
     myclib.macroField(hz, mur, Hz, Ny, Nx, Q, N)
 
-        
-    if (t >= 0):
             
-        '''source wave'''
-        planeWaveTM(EzI, HyI, t, omega, xloc, ymin, ymax)
-        planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax)
+    '''source wave'''
+    planeWaveTM(EzI, HyI, t, omega, xloc, ymin, ymax)
+    planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax)
 
 
-        '''calculation of scattered fields'''
-        Ez_scat = Ez - EzI
-        Hx_scat = Hx - HxI
-        Hy_scat = Hy - HyI
-
-        Ez_scat[scatterer] = 0
-        Hx_scat[scatterer] = 0
-        Hy_scat[scatterer] = 0
-
-        '''collision and streaming (the 2 steps of LBM) when field is forced'''
-        myclib.collForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Ny, Nx, Q, xloc, ymin, ymax, N)
-        myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, xloc, ymin, ymax, N)
-        myclib.streaming(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, Ny, Nx, Q, N)
-        myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q, N)
+    '''calculation of scattered fields'''
+    Ex_scat = Ex - ExI
+    Ey_scat = Ey - EyI
+    Ez_scat = Ez - EzI
+    Hx_scat = Hx - HxI
+    Hy_scat = Hy - HyI
+    Hz_scat = Hz - HzI
 
 
+    '''electric field is zero inside PEC'''
+##    Ex[scatterer] = 0
+##    Ey[scatterer] = 0
+##    Ez[scatterer] = 0
 
-    else:    
-        '''collision and streaming (the 2 steps of LBM) when field is not forced'''
-        myclib.collNotForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Ny, Nx, Q, N)
-        myclib.collNotForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, N)
-        myclib.streaming(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, Ny, Nx, Q, N)
-        myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q, N)
+
+
+    '''collision and streaming (the 2 steps of LBM) when field is forced'''
+    myclib.collForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Ny, Nx, Q, xloc, ymin, ymax, N)
+    myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, xloc, ymin, ymax, N)
+    myclib.streaming(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, Ny, Nx, Q, N)
+    myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q, N)
         
     ###############################################################################################################
    
@@ -136,13 +151,19 @@ for t in range(int(Time)):
         ###############################################################################################################
         
         '''converting from time domain to frequency domain'''
-        Ex_phasor += Ex_scat * np.exp((0 - 1j) * omega * t) / period * 2
-        Ey_phasor += Ey_scat * np.exp((0 - 1j) * omega * t) / period * 2
-        Ez_phasor += Ez_scat * np.exp((0 - 1j) * omega * t) / period * 2
+        ExScat += Ex_scat * np.exp((0 - 1j) * omega * t) / period * 2
+        EyScat += Ey_scat * np.exp((0 - 1j) * omega * t) / period * 2
+        EzScat += Ez_scat * np.exp((0 - 1j) * omega * t) / period * 2
+        HxScat += Hx_scat * np.exp((0 - 1j) * omega * t) / period * 2
+        HyScat += Hy_scat * np.exp((0 - 1j) * omega * t) / period * 2
+        HzScat += Hz_scat * np.exp((0 - 1j) * omega * t) / period * 2
 
-        Hx_phasor += Hx_scat * np.exp((0 - 1j) * omega * t) / period * 2
-        Hy_phasor += Hy_scat * np.exp((0 - 1j) * omega * t) / period * 2
-        Hz_phasor += Hz_scat * np.exp((0 - 1j) * omega * t) / period * 2
+        ExTot += Ex * np.exp((0 - 1j) * omega * t) / period * 2
+        EyTot += Ey * np.exp((0 - 1j) * omega * t) / period * 2
+        EzTot += Ez * np.exp((0 - 1j) * omega * t) / period * 2
+        HxTot += Hx * np.exp((0 - 1j) * omega * t) / period * 2
+        HyTot += Hy * np.exp((0 - 1j) * omega * t) / period * 2
+        HzTot += Hz * np.exp((0 - 1j) * omega * t) / period * 2
         ###############################################################################################################
 
 
@@ -155,20 +176,134 @@ for t in range(int(Time)):
 
 t3 = time.time()
 total_time = (t3 - t0) / 60
-print(f"\nTotal time taken: {total_time:.2f} minutes")
+print(f"\nTotal time taken: {total_time:.2f} minutes\n")
 ###############################################################################################################
 
 
-np.save(directory+"/Ex_{}.npy".format(ratio), Ex_phasor)
-np.save(directory+"/Ey_{}.npy".format(ratio), Ey_phasor)
-np.save(directory+"/Ez_{}.npy".format(ratio), Ez_phasor)
+np.save(directory_scattered+"/ExScat_{}.npy".format(ratio), ExScat)
+np.save(directory_scattered+"/EyScat_{}.npy".format(ratio), EyScat)
+np.save(directory_scattered+"/EzScat_{}.npy".format(ratio), EzScat)
+np.save(directory_scattered+"/HxScat_{}.npy".format(ratio), HxScat)
+np.save(directory_scattered+"/HyScat_{}.npy".format(ratio), HyScat)
+np.save(directory_scattered+"/HzScat_{}.npy".format(ratio), HzScat)
 
-np.save(directory+"/Hx_{}.npy".format(ratio), Hx_phasor)
-np.save(directory+"/Hy_{}.npy".format(ratio), Hy_phasor)
-np.save(directory+"/Hz_{}.npy".format(ratio), Hz_phasor)
+np.save(directory_total+"/ExTot_{}.npy".format(ratio), ExTot)
+np.save(directory_total+"/EyTot_{}.npy".format(ratio), EyTot)
+np.save(directory_total+"/EzTot_{}.npy".format(ratio), EzTot)
+np.save(directory_total+"/HxTot_{}.npy".format(ratio), HxTot)
+np.save(directory_total+"/HyTot_{}.npy".format(ratio), HyTot)
+np.save(directory_total+"/HzTot_{}.npy".format(ratio), HzTot)
 
 
 #####################
 
-np.save(directory+"/energy_{}.npy".format(ratio), U)
+np.save(directory_energy+"/energy_{}.npy".format(ratio), U)
+
+#####################
+
+
+
+
+
+
+
+directory_info = 'data/information'
+if not os.path.exists(directory_info):
+    os.makedirs(directory_info)
+file_name = "info_{}.txt".format(ratio)
+file_path = os.path.join(directory_info, file_name)
+
+
+
+'''computatio speed'''
+# domain size Ny*Nx
+# 6 fields (3 E fields and 3 H fields)
+# 2 (scattered and total)
+lattice_sites = 2 * 6 * Ny * Nx
+time_steps = Time
+
+mlups = lattice_sites * time_steps / ((t3 - t0) * 1e6)
+
+
+import platform
+import os
+import subprocess
+
+# Parse CPU information from /proc/cpuinfo
+cpu_info = []
+cache_size = []
+with open("/proc/cpuinfo", "r") as file:
+    for line in file:
+        if line.strip():
+            key, _, value = line.partition(":")
+            if key.strip() == "model name":
+                cpu_info.append(value.strip())
+            if key.strip() == "cache size":
+                cache_size.append(value.strip())
+
+
+# Parse RAM information from /proc/meminfo
+with open("/proc/meminfo", "r") as file:
+    mem_info = {}
+    for line in file:
+        key, _, value = line.partition(":")
+        mem_info[key.strip()] = value.strip()
+
+# Get total and available memory in GB
+total_memory = int(mem_info["MemTotal"].split()[0]) / 1024 / 1024  # Convert kB to GB
+available_memory = int(mem_info["MemAvailable"].split()[0]) / 1024 / 1024  # Convert kB to GB
+
+
+
+with open(file_path, "w") as file:
+    file.write(f"Radius of the cylinder: {a}.\n")
+    
+    if (er2 > 1):
+        file.write(f"Wavelength inside the scatterer: {wavelength * V2 / V1:.2f}.\n")
+        
+    file.write(f"Wavelength of the incident wave: {wavelength:.2f}.\n\n")
+    
+    file.write(f"Size of the computational domain: {Ny} * {Nx}.\n")
+    file.write(f"Number of time steps: {Time}.\n\n")
+
+    
+    file.write(f"Number of parallel threads: {N}.\n")
+    file.write(f"Total time taken: {t3 - t0:.2f} seconds.\n\n")
+    file.write(f"Computation speed in MLUPS: {mlups:.2f}.\n\n")
+
+    # CPU information
+    file.write(f"CPU Model: {cpu_info[0]}\n")  # First processor
+    file.write(f"Total logical cores: {len(cpu_info)}\n")
+    file.write(f"Cache Size: {cache_size[0]}\n")  # Cache size of the first processor
+
+    # system memory
+    file.write(f"Total Memory: {total_memory:.2f} GB\n")
+    file.write(f"Available Memory: {available_memory:.2f} GB\n\n")
+
+
+    # python version
+    file.write(f"Python Version: {platform.python_version()}\n")
+
+    # Get GCC version
+    try:
+        gcc_version = subprocess.check_output(["gcc", "--version"], universal_newlines=True)
+        gcc_version_line = gcc_version.splitlines()[0]
+        file.write(f"GCC Version: {gcc_version_line}\n\n")
+    except FileNotFoundError:
+        file.write("GCC Compiler not found. Please install GCC to retrieve its version.\n\n")
+
+
+    # Operating System
+    file.write(f"Operating System: {platform.system()}\n")
+    file.write(f"OS Version: {platform.version()}\n")
+    file.write(f"OS Release: {platform.release()}\n\n")
+
+    # Machine and Processor Info
+    file.write(f"Machine: {platform.machine()}\n")
+    file.write(f"Processor: {platform.processor()}\n")
+
+
+print(f"Computation speed in MLUPS: {mlups:.2f}\n")
+
+print('\n--------------------------------------------------------------------\n')
 

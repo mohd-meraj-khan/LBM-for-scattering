@@ -14,24 +14,21 @@ from Module_Parameters_2D import *
 
 
 
-directory = 'data'
-if not os.path.exists(directory):
-    os.makedirs(directory)
-
-plots = 'plots'
-if not os.path.exists(plots):
-    os.makedirs(plots)
+directory = 'data/total_field'
 
 
 
 
-Ex = np.load(directory+'/Ex_{}.npy'.format(ratio))
-Ey = np.load(directory+'/Ey_{}.npy'.format(ratio))
-Ez = np.load(directory+'/Ez_{}.npy'.format(ratio))
 
-Hx = np.load(directory+'/Hx_{}.npy'.format(ratio))
-Hy = np.load(directory+'/Hy_{}.npy'.format(ratio))
-Hz = np.load(directory+'/Hz_{}.npy'.format(ratio))
+
+
+Ex = np.load(directory+'/ExTot_{}.npy'.format(ratio))
+Ey = np.load(directory+'/EyTot_{}.npy'.format(ratio))
+Ez = np.load(directory+'/EzTot_{}.npy'.format(ratio))
+
+Hx = np.load(directory+'/HxTot_{}.npy'.format(ratio))
+Hy = np.load(directory+'/HyTot_{}.npy'.format(ratio))
+Hz = np.load(directory+'/HzTot_{}.npy'.format(ratio))
 
 
 

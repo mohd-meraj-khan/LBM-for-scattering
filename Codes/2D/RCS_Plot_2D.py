@@ -8,13 +8,14 @@ import os
 from Module_Parameters_2D import *
 
 
-directory = 'data'
-if not os.path.exists(directory):
-    os.makedirs(directory)
+directory = 'data/rcs'
 
-plots = 'plots'
+
+
+plots = 'plots/plots_RCS'
 if not os.path.exists(plots):
     os.makedirs(plots)
+
 
 
 

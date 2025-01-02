@@ -9,18 +9,16 @@ import math
 import scipy.special as sc
 from math import e
 import cmath
-from scipy.optimize import curve_fit
+from Module_Parameters_2D import *
 
 
-directory = 'data'
+directory = 'data/rcs'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
 
 
-ratio = 0.5
 
-er2 = 2
 
 
 r = 100

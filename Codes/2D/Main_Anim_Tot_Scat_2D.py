@@ -18,7 +18,13 @@ if not os.path.exists(pictures):
 
 
 
-print("Number of time steps :", int(Time))
+print('\n')
+print(f'ratio : {ratio}')
+print(f'Number of parallel threads :{N}')
+print(f'Number of time steps :{Time}')
+
+print(f"Size of the computational domain: {Ny} * {Nx}\n")
+
 
 
 
@@ -118,9 +124,10 @@ with writer.saving(fig, Video_Name,300):
             Hy_scat = Hy - HyI
             Hz_scat = Hz - HzI
 
-##            Ez_scat[scatterer] = 0
-##            Hx_scat[scatterer] = 0
-##            Hy_scat[scatterer] = 0
+            '''electric field is zero inside PEC'''
+##            Ex[scatterer] = 0
+##            Ey[scatterer] = 0
+##            Ez[scatterer] = 0
 
             '''collision and streaming (the 2 steps of LBM) when field is forced'''
             myclib.collForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Ny, Nx, Q, xloc, ymin, ymax, N)
@@ -131,13 +138,19 @@ with writer.saving(fig, Video_Name,300):
 
 
         else:
-
+            '''calculation of scattered fields'''
             Ex_scat = Ex - ExI
             Ey_scat = Ey - EyI
             Ez_scat = Ez - EzI
             Hx_scat = Hx - HxI
             Hy_scat = Hy - HyI
             Hz_scat = Hz - HzI
+
+
+            '''electric field is zero inside PEC'''
+##            Ex[scatterer] = 0
+##            Ey[scatterer] = 0
+##            Ez[scatterer] = 0
 
             
             '''collision and streaming (the 2 steps of LBM) when field is not forced'''

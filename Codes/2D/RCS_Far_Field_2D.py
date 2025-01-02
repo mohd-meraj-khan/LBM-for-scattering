@@ -7,21 +7,26 @@ from Module_Parameters_2D import *
 
 
 
-directory = 'data'
-if not os.path.exists(directory):
-    os.makedirs(directory)
+directory = 'data/scattered_field'
+
+
+directory_rcs = 'data/rcs'
+if not os.path.exists(directory_rcs):
+    os.makedirs(directory_rcs)
+
 
 
 
 
 '''loading the field data (cartesian)'''
-Ex = np.load(directory+'/Ex_{}.npy'.format(ratio))
-Ey = np.load(directory+'/Ey_{}.npy'.format(ratio))
-Ez = np.load(directory+'/Ez_{}.npy'.format(ratio))
+Ex = np.load(directory+'/ExScat_{}.npy'.format(ratio))
+Ey = np.load(directory+'/EyScat_{}.npy'.format(ratio))
+Ez = np.load(directory+'/EzScat_{}.npy'.format(ratio))
 
-Hx = np.load(directory+'/Hx_{}.npy'.format(ratio))
-Hy = np.load(directory+'/Hy_{}.npy'.format(ratio))
-Hz = np.load(directory+'/Hz_{}.npy'.format(ratio))
+Hx = np.load(directory+'/HxScat_{}.npy'.format(ratio))
+Hy = np.load(directory+'/HyScat_{}.npy'.format(ratio))
+Hz = np.load(directory+'/HzScat_{}.npy'.format(ratio))
+
 
 
 
@@ -231,7 +236,7 @@ RCS = 2*np.pi*rho0/wavelength*Ez_far[:, 1]**2
 
 
 
-np.save(directory+"/RCS_LBM_{}.npy".format(ratio), RCS)
+np.save(directory_rcs+"/RCS_LBM_{}.npy".format(ratio), RCS)
 
 
 

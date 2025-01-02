@@ -12,15 +12,24 @@ N = 12
 '''Accessing command line arguments'''
 parameters = sys.argv
 
-theta = 45
+
 ######################
 
 a, ratio = 25, 0.5   # ratio = a / wavelength
+
+'''size of the computational domain'''
 n = 6
-Nx, Ny = n*a, n*a  # size of the computational domain
+Nx, Ny = n*a, n*a
 
-er1, mur1, er2, er3 = 1, 1, 4, 10000   # material properties i.e. permittivity and permeabilty
+'''material properties'''
+er1, mur1 = 1, 1   
 
+er2 = 2
+mur2 = 1
+
+
+V1 = 1 / (3 * np.sqrt(er1*mur1))
+V2 = 1 / (3 * np.sqrt(er2*mur2))
 
 ################################################################
 ###                        SCATTERER                        ####
@@ -45,24 +54,14 @@ cx = Nx//2 + 0.5
 cy = Ny//2 + 0.5
 
 '''converting from cartesian to polar coordinates'''
-carToPolar(r, phi, Ny, Nx, cy, cx)
+r, phi = carToPolar(Ny, Nx, cy, cx)
 
 '''scatterer particle'''
-##first_half, second_half  = Module_Geometry.JanusHalf(r, a, theta, Ny, Nx, cy, cx)
-##
-##er[first_half]  = er2
-##er[second_half] = er3
-
-
 scatterer = circle(r, a, Ny, Nx)
 
 er[scatterer] = er2
 
-##er = (er2 - er1)/2 * (np.tanh(a - r) + 1) + er1
-##
-##
-##print(er[Nx//2, :])
-##sys.exit()
+
 ################################################################
 
 
@@ -116,9 +115,9 @@ nzTop, nzRight, nzBottom, nzLeft = 0, 0,  0, 0
 
 
 noOfPeriods = 0
-noOfReflections = 10
+noOfReflections = 20
 
 
 '''number of time steps the code will run'''
-Time = int(3 * (Nx * np.sqrt(er1) + noOfReflections * 2 * a * np.sqrt(er2)) + noOfPeriods * period)
+Time = int(3 * (Nx * np.sqrt(er1)  + noOfPeriods * period + noOfReflections * 2*a * np.sqrt(er1) ) )
 

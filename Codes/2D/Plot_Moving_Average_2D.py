@@ -1,19 +1,9 @@
-import numpy as np ; from numpy.linalg import *
+import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+
 import matplotlib.patches as patches
 import sys
 import os
-from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
-import csv
-import math
-import scipy.special as sc
-from math import e
-import cmath
-from scipy import interpolate
-from matplotlib.gridspec import GridSpec
 
 from Module_Parameters_2D import *
 

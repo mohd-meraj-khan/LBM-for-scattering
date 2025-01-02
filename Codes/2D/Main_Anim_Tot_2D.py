@@ -17,8 +17,13 @@ if not os.path.exists(pictures):
 
 
 
+print('\n')
+print(f'ratio : {ratio}')
+print(f'Number of parallel threads :{N}')
+print(f'Number of time steps :{Time}')
 
-print("Number of time steps :", int(Time))
+print(f"Size of the computational domain: {Ny} * {Nx}\n")
+
 
 
 
@@ -60,7 +65,7 @@ plt.ion()
 
 fps = 10
 
-Video_Name = "Ez_tot1.mp4"
+Video_Name = "Ez_tot.mp4"
 
 FFMpegWriter = animation.writers['ffmpeg']
 
