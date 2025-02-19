@@ -9,8 +9,12 @@ The solver is currently designed to compute radar cross-section (RCS) and radiat
 
 
 
+> [!NOTE]
+> I am currently seeking opportunities in the industry or a postdoc position in computational physics/biology. If you believe my skills and experience align with your needs, feel free to reach out to me at meraj@cacs.iitm.ac.in, connect with me on [LinkedIn](https://www.linkedin.com/in/meraj87), or view my [CV](https://drive.google.com/file/d/1gwV3vy8u4uV727nPQO8EAbnB6db8rSak/view?usp=sharing) for a quick overview. I look forward to connecting!
 
 
+> [!NOTE]
+> The code is currently a work in progress. The 2D version is stable and ready for use, while the 3D version requires further development to be fully functional.
 
 
 ## Related publications
