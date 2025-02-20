@@ -17,6 +17,10 @@ The solver is currently designed to compute radar cross-section (RCS) and radiat
 > The code is currently a work in progress. The 2D version is stable and ready for use, while the 3D version requires further development to be fully functional.
 
 
+> [!NOTE]
+> If you have a research idea and are interested in collaborating, feel free to reach out to me at meraj@cacs.iitm.ac.in. I’d be happy to discuss potential opportunities!
+
+
 ## Related publications
 
 [Electromagnetic scattering by curved surfaces and calculation of radiation force: Lattice Boltzmann simulations](https://doi.org/10.1063/5.0234413)
