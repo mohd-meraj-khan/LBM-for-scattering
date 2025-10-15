@@ -10,31 +10,29 @@ The solver is currently designed to compute radar cross-section (RCS) and radiat
 
 
 > [!NOTE]
-> I am currently seeking opportunities in the industry or a postdoc position in computational physics/biology. If you believe my skills and experience align with your needs, feel free to reach out to me at meraj@cacs.iitm.ac.in, connect with me on [LinkedIn](https://www.linkedin.com/in/meraj87), or view my [CV](https://drive.google.com/file/d/1gwV3vy8u4uV727nPQO8EAbnB6db8rSak/view?usp=sharing) for a quick overview. I look forward to connecting!
-
-
-> [!NOTE]
-> The code is currently a work in progress. The 2D version is stable and ready for use, while the 3D version requires further development to be fully functional.
-
-
-> [!NOTE]
 > If you have a research idea and are interested in collaborating, feel free to reach out to me at meraj@cacs.iitm.ac.in. I’d be happy to discuss potential opportunities!
 
 
-## Related publications
 
-[Electromagnetic scattering by curved surfaces and calculation of radiation force: Lattice Boltzmann simulations](https://doi.org/10.1063/5.0234413)
+## 🧩 Related Publications
 
-*We compare LBM solutions with analytical solutions for smooth circular conducting and dielectric cylinders in scattering width and radiation force calculations. Additionally, we compare LBM solutions with [semi-analytical](https://doi.org/10.1364/OSAC.2.000298) solutions for corrugated elliptical conducting cylinders in radiation force calculations. In all cases, we find strong agreement between LBM solutions and both analytical and semi-analytical solutions across all three scattering regimes.*
+### [**Electromagnetic Scattering by Curved Surfaces and Calculation of Radiation Force: Lattice Boltzmann Simulations**](https://doi.org/10.1063/5.0234413)
+*LBM applied to curved geometries for scattering and radiation-force computations.*
 
-[Lattice Boltzmann method for electromagnetic wave scattering](https://arxiv.org/abs/2510.11042)
+In this work, we apply the Lattice Boltzmann Method to electromagnetic scattering from curved surfaces and evaluate the resulting radiation forces. The method is systematically validated against analytical and semi-analytical solutions for conducting and dielectric cylinders, including corrugated and elliptical geometries. Excellent agreement is observed across different scattering regimes, establishing LBM as a reliable tool for accurate field and radiation-force computations on complex curved boundaries.
 
-*In this paper, we propose the lattice Boltzmann method (LBM) as an alternative numerical approach for electromagnetic scattering. The method is systematically validated over a wide range of size parameters, thereby covering the Rayleigh, Mie, and geometric optics regimes, through comparison with established reference solutions. For circular cylinders, both perfect electrically conducting (PEC) and dielectric, LBM results are benchmarked against analytical Mie theory. For dielectric cylinders, comparisons are performed over a broad range of relative permittivities to assess accuracy across different material contrasts. Scattering from dielectric spheres is likewise compared with exact Mie solutions, showing excellent agreement. To assess performance for non-canonical geometries, we investigate a hexagonal dielectric cylinder and validate the results against the Discretized Mie-Formalism, demonstrating that LBM can accurately capture edge diffraction and sharp-facet effects. Overall, the study provides the first systematic benchmarking of LBM for electromagnetic scattering in one-, two-, and three-dimensional configurations, establishing it as a promising and versatile tool in computational electromagnetics.*
+---
 
-[Radiation Forces and Torques on Janus Cylinders](https://arxiv.org/abs/2509.22308)
+### [**Lattice Boltzmann Method for Electromagnetic Wave Scattering**](https://arxiv.org/abs/2510.11042)
+*LBM as a numerical framework for broadband electromagnetic scattering.*
 
-*The interaction of electromagnetic waves with dielectric Janus particles gives rise to radiation forces and torques, governed by the dielectric properties, interface orientation, and the size-to-wavelength ratio. In this study, we employ the Lattice Boltzmann Method to compute the radiation-induced drag, lift, and torque on circular Janus cylinders when illuminated by a transverse magnetic polarized plane wave. We analyze both metallo-dielectric and dielectric Janus cylinders. For metallo-dielectric Janus cylinders, LBM predictions are validated against analytical results, showing excellent agreement in far-field bistatic scattering width, radiation force, and torque across a range of dielectric constants and interface orientations. Extending the study to dielectric Janus cylinders, we explore how the dielectric contrast and interface orientation shape the optomechanical response. Our findings show that radiation-induced forces and torques can be harnessed to drive and control the motion of dielectric Janus particles in optofluidic, active, and self-assembling systems. *
+This paper proposes the Lattice Boltzmann Method as an alternative numerical framework for electromagnetic scattering computations. LBM is benchmarked across one-, two-, and three-dimensional configurations, covering plane-wave reflection and refraction, scattering from circular and hexagonal cylinders, and spherical geometries. The results are compared with analytical and Discretized Mie-Formalism solutions, demonstrating the accuracy, stability, and versatility of LBM for broadband electromagnetic simulations.
 
+---
 
+### [**Radiation Forces and Torques on Janus Cylinders**](https://arxiv.org/abs/2509.22308)
+*LBM for composite materials: radiation force, torque, and motion of Janus cylinders.*
+
+In this study, we extend the Lattice Boltzmann Method to model electromagnetic scattering and radiation-induced forces on composite (Janus) cylinders. LBM results for scattering and radiation forces/torques are benchmarked against semi-analytical solutions, showing excellent agreement. We further compute the coupled electromagnetic and hydrodynamic interactions to simulate the trajectories of Janus cylinders under combined radiation and viscous forces, highlighting their potential in optofluidic and active-matter systems.
 
 
