@@ -9,15 +9,30 @@ The solver is currently designed to compute radar cross-section (RCS) and radiat
 
 
 
+> [!NOTE]
+> If you have a research idea and are interested in collaborating, feel free to reach out to me at meraj@cacs.iitm.ac.in. I’d be happy to discuss potential opportunities!
 
 
 
+## 🧩 Related Publications
 
-## Related publications
+### [**Electromagnetic Scattering by Curved Surfaces and Calculation of Radiation Force: Lattice Boltzmann Simulations**](https://doi.org/10.1063/5.0234413)
+*LBM applied to curved geometries for scattering and radiation-force computations.*
 
-[Electromagnetic scattering by curved surfaces and calculation of radiation force: Lattice Boltzmann simulations](https://doi.org/10.1063/5.0234413)
+In this work, we apply the Lattice Boltzmann Method to electromagnetic scattering from curved surfaces and evaluate the resulting radiation forces. The method is systematically validated against analytical and semi-analytical solutions for conducting and dielectric cylinders, including corrugated and elliptical geometries. Excellent agreement is observed across different scattering regimes, establishing LBM as a reliable tool for accurate field and radiation-force computations on complex curved boundaries.
 
-*We compare LBM solutions with analytical solutions for smooth circular conducting and dielectric cylinders in scattering width and radiation force calculations. Additionally, we compare LBM solutions with [semi-analytical](https://doi.org/10.1364/OSAC.2.000298) solutions for corrugated elliptical conducting cylinders in radiation force calculations. In all cases, we find strong agreement between LBM solutions and both analytical and semi-analytical solutions across all three scattering regimes.*
+---
 
+### [**Lattice Boltzmann Method for Electromagnetic Wave Scattering**](https://arxiv.org/abs/2510.11042)
+*LBM as a numerical framework for broadband electromagnetic scattering.*
+
+This paper proposes the Lattice Boltzmann Method as an alternative numerical framework for electromagnetic scattering computations. LBM is benchmarked across one-, two-, and three-dimensional configurations, covering plane-wave reflection and refraction, scattering from circular and hexagonal cylinders, and spherical geometries. The results are compared with analytical and Discretized Mie-Formalism solutions, demonstrating the accuracy, stability, and versatility of LBM for broadband electromagnetic simulations.
+
+---
+
+### [**Radiation Forces and Torques on Janus Cylinders**](https://arxiv.org/abs/2509.22308)
+*LBM for composite materials: radiation force, torque, and motion of Janus cylinders.*
+
+In this study, we extend the Lattice Boltzmann Method to model electromagnetic scattering and radiation-induced forces on composite (Janus) cylinders. LBM results for scattering and radiation forces/torques are benchmarked against semi-analytical solutions, showing excellent agreement. We further compute the coupled electromagnetic and hydrodynamic interactions to simulate the trajectories of Janus cylinders under combined radiation and viscous forces, highlighting their potential in optofluidic and active-matter systems.
 
 
