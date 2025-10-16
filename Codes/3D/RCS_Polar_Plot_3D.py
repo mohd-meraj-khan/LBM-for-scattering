@@ -12,25 +12,32 @@ directory = 'data/rcs'
 
 
 
-plots = 'plots/plots_RCS/cartesian'
+plots = 'plots/plots_RCS/polar'
 if not os.path.exists(plots):
     os.makedirs(plots)
 
 
-dtheta = 1
-theta = np.arange(0, 360 + 1, dtheta)
+
+
+phi = np.linspace(0, 2*np.pi, 361)
+
+
+
+
+theta = np.linspace(0, 2*np.pi, 361)
 
 
 
 BRCS_LBM   = np.load(directory+'/RCS_LBM_{}_{}_{}.npy'.format(ratio, er2, phi0))
 BRCS_exact = np.load(directory+'/BRCS_exact_{}_{}_{}.npy'.format(ratio, er2, phi0))
+
     
 
 
 
 
 ###################################
-
+width = 2.23
 
 plt.clf()
 
@@ -41,32 +48,28 @@ plt.rc('lines', markersize = 2, lw = 0.75)
 plt.rc('text', usetex = True)
 
 ################################################################################
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize = (3.35, 2.05), dpi=600, constrained_layout = True)
+fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (width, width), dpi=600, constrained_layout = True)
 
 
 
 
-plt.plot(theta, BRCS_exact, 'k-')
+ax.plot(theta, BRCS_exact, 'k-')
 
-plt.plot(theta, BRCS_LBM, 'r--')
+ax.plot(theta, BRCS_LBM, 'r--')
 
+ax.set_rscale('symlog')
 
-plt.xticks([0, 180, 360])
-plt.gca().set_xticklabels([0, r'$\pi$', r'$2\pi$'])
+ax.set_rlabel_position(-125)
+ax.grid(True)
 
-plt.xlabel(r'$\phi$')
-plt.ylabel(r'$\sigma / (\pi a^2)$')
-
-
-plt.legend([r'Analytical', r'LBM'])
-
-##plt.grid(which='both')
+ax.set_thetagrids([45, 135, 225, 315], labels=[r'$\pi/4$', r'$3\pi/4$', r'$5\pi/4$', r'$7\pi/4$'])
 
 
-plt.yscale('log')
+##plt.legend([r'Analytical', r'LBM'])
+
 
     
-plt.savefig(plots+'/RCS_{}_{}.svg'.format(ratio, er2, phi0))
+plt.savefig(plots+'/RCS_Polar_{}_{}_{}.svg'.format(ratio, er2, phi0))
 plt.close()
 ################################################################################
 
@@ -74,29 +77,25 @@ plt.close()
 
 
 ################################################################################
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize = (3.35, 2.05), dpi=600, constrained_layout = True)
+fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize = (width, width), dpi=600, constrained_layout = True)
 
 
 
 
-plt.plot(theta, np.absolute((BRCS_exact - BRCS_LBM) / BRCS_exact)*100, 'k-')
-
-##plt.plot(phi, BRCS_LBM, 'r--')
+ax.plot(theta, np.absolute((BRCS_exact - BRCS_LBM) / BRCS_exact)*100, 'k-')
 
 
-plt.xticks([0, 180, 360])
-plt.gca().set_xticklabels([0, r'$\pi$', r'$2\pi$'])
 
-plt.xlabel(r'$\phi$')
-plt.ylabel(r'$\sigma / (\pi a^2)$')
+ax.set_rscale('symlog')
 
-plt.grid(which='both')
+ax.set_rlabel_position(-125)
+ax.grid(True)
 
+ax.set_thetagrids([45, 135, 225, 315], labels=[r'$\pi/4$', r'$3\pi/4$', r'$5\pi/4$', r'$7\pi/4$'])
 
-plt.yscale('log')
 
     
-plt.savefig(plots+'/RCS_{}_{}_Err.svg'.format(ratio, er2, phi0))
+plt.savefig(plots+'/RCS_Polar_{}_{}_{}_Err.svg'.format(ratio, er2, phi0))
 plt.close()
 ################################################################################
 

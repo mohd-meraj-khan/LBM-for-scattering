@@ -16,9 +16,9 @@ if not os.path.exists(directory_total):
     os.makedirs(directory_total)
 
 
-directory_energy = 'data/energy'
-if not os.path.exists(directory_energy):
-    os.makedirs(directory_energy)
+MA = 'data/moving_average'
+if not os.path.exists(MA):
+    os.makedirs(MA)
 
 
 print('\n')
@@ -26,7 +26,10 @@ print(f'ratio : {ratio}')
 print(f'Number of parallel threads :{N}')
 print(f'Number of time steps :{Time}')
 
-print(f"Size of the computational domain: {Ny} * {Nx}\n")
+print(f"Size of the computational domain: {Ny} * {Nx}\n\n")
+
+print(f"Radius of the cylinder: {a}.\n")
+print(f"Wavelength of the incident wave: {wavelength:.2f}.\n\n")
 
 
 
@@ -180,24 +183,24 @@ print(f"\nTotal time taken: {total_time:.2f} minutes\n")
 ###############################################################################################################
 
 
-np.save(directory_scattered+"/ExScat_{}.npy".format(ratio), ExScat)
-np.save(directory_scattered+"/EyScat_{}.npy".format(ratio), EyScat)
-np.save(directory_scattered+"/EzScat_{}.npy".format(ratio), EzScat)
-np.save(directory_scattered+"/HxScat_{}.npy".format(ratio), HxScat)
-np.save(directory_scattered+"/HyScat_{}.npy".format(ratio), HyScat)
-np.save(directory_scattered+"/HzScat_{}.npy".format(ratio), HzScat)
+np.save(directory_scattered+"/ExScat_{}_{}.npy".format(er2, ratio), ExScat)
+np.save(directory_scattered+"/EyScat_{}_{}.npy".format(er2, ratio), EyScat)
+np.save(directory_scattered+"/EzScat_{}_{}.npy".format(er2, ratio), EzScat)
+np.save(directory_scattered+"/HxScat_{}_{}.npy".format(er2, ratio), HxScat)
+np.save(directory_scattered+"/HyScat_{}_{}.npy".format(er2, ratio), HyScat)
+np.save(directory_scattered+"/HzScat_{}_{}.npy".format(er2, ratio), HzScat)
 
-np.save(directory_total+"/ExTot_{}.npy".format(ratio), ExTot)
-np.save(directory_total+"/EyTot_{}.npy".format(ratio), EyTot)
-np.save(directory_total+"/EzTot_{}.npy".format(ratio), EzTot)
-np.save(directory_total+"/HxTot_{}.npy".format(ratio), HxTot)
-np.save(directory_total+"/HyTot_{}.npy".format(ratio), HyTot)
-np.save(directory_total+"/HzTot_{}.npy".format(ratio), HzTot)
+np.save(directory_total+"/ExTot_{}_{}.npy".format(er2, ratio), ExTot)
+np.save(directory_total+"/EyTot_{}_{}.npy".format(er2, ratio), EyTot)
+np.save(directory_total+"/EzTot_{}_{}.npy".format(er2, ratio), EzTot)
+np.save(directory_total+"/HxTot_{}_{}.npy".format(er2, ratio), HxTot)
+np.save(directory_total+"/HyTot_{}_{}.npy".format(er2, ratio), HyTot)
+np.save(directory_total+"/HzTot_{}_{}.npy".format(er2, ratio), HzTot)
 
 
 #####################
 
-np.save(directory_energy+"/energy_{}.npy".format(ratio), U)
+np.save(MA+"/energy_{}_{}.npy".format(er2, ratio), U)
 
 #####################
 
@@ -210,7 +213,7 @@ np.save(directory_energy+"/energy_{}.npy".format(ratio), U)
 directory_info = 'data/information'
 if not os.path.exists(directory_info):
     os.makedirs(directory_info)
-file_name = "info_{}.txt".format(ratio)
+file_name = "info_{}_{}.txt".format(er2, ratio)
 file_path = os.path.join(directory_info, file_name)
 
 

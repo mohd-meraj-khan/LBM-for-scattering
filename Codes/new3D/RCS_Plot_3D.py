@@ -8,14 +8,13 @@ import os
 from Module_Parameters_2D import *
 
 
-directory = 'data/rcs'
+directory = 'data'
+if not os.path.exists(directory):
+    os.makedirs(directory)
 
-
-
-plots = 'plots/plots_RCS/cartesian'
+plots = 'plots'
 if not os.path.exists(plots):
     os.makedirs(plots)
-
 
 
 
@@ -24,8 +23,8 @@ phi = np.arange(0, 360 + 0.001, dphi)
 
 
 
-BRCS_LBM = np.load(directory+'/RCS_LBM_{}_{}.npy'.format(er2, ratio))
-BRCS_exact = np.load(directory+'/BRCS_exact_{}_{}.npy'.format(er2, ratio))
+BRCS_LBM = np.loadtxt(directory+'/RCS_LBM_{}.txt'.format(ratio))
+BRCS_exact = np.loadtxt(directory+'/BRCS_exact_{}.txt'.format(ratio))
     
 
 
@@ -64,38 +63,13 @@ plt.grid(which='both')
 plt.yscale('log')
 
     
-plt.savefig(plots+'/RCS_{}_{}.svg'.format(er2, ratio))
+plt.savefig(plots+'/RCS_PEC1.svg')
 plt.close()
 ################################################################################
 
 
 
 
-################################################################################
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize = (3.35, 2.05), dpi=600, constrained_layout = True)
-
-
-
-
-plt.plot(phi, np.absolute((BRCS_exact - BRCS_LBM) / BRCS_exact)*100, 'k.')
-
-plt.plot(phi, BRCS_LBM, 'r--')
-
-
-plt.xticks([0, 60, 120, 180, 240, 300, 360])
-
-plt.xlabel(r'$\phi (^o)$')
-plt.ylabel(r'$\sigma / \lambda$')
-
-plt.grid(which='both')
-
-
-plt.yscale('log')
-
-    
-plt.savefig(plots+'/RCS_{}_{}_Err.svg'.format(er2, ratio))
-plt.close()
-################################################################################
 
 
 

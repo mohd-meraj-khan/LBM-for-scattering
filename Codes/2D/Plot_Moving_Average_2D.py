@@ -10,31 +10,23 @@ from Module_Parameters_2D import *
 
 
 
-directory = 'data'
-if not os.path.exists(directory):
-    os.makedirs(directory)
-
-plots = 'plots'
-if not os.path.exists(plots):
-    os.makedirs(plots)
+directory = 'data/moving_average'
 
 
+force = 'plots/MA_Force'
+if not os.path.exists(force):
+    os.makedirs(force)
 
-u  = np.load(directory+"/energy_{}.npy".format(ratio))
+energy = 'plots/MA_Energy'
+if not os.path.exists(energy):
+    os.makedirs(energy)
 
-fx = np.load(directory+"/FxIns_{}.npy".format(ratio))
-fy = np.load(directory+"/FyIns_{}.npy".format(ratio))
-tz = np.load(directory+"/TzIns_{}.npy".format(ratio))
+
+
+u  = np.load(directory+"/energy_{}_{}.npy".format(er2, ratio))
 
 
 maEnergy = []
-
-mafx = []
-mafy = []
-matz = []
-
-
-
 
 
 step = 1
@@ -50,19 +42,6 @@ while (i < len(u) - period + 1):
     window_u = u[i : i + period]
     window_u_average = sum(window_u) / period
     maEnergy.append(window_u_average / U)
-
-    window_fx = fx[i : i + period]
-    window_fx_average = sum(window_fx) / period
-    mafx.append(window_fx_average)
-    
-    window_fy = fy[i : i + period]
-    window_fy_average = sum(window_fy) / period
-    mafy.append(window_fy_average)
-
-    window_tz = tz[i : i + period]
-    window_tz_average = sum(window_tz) / period
-    matz.append(window_tz_average)
-
     
     i += step
 ###################################
@@ -92,39 +71,63 @@ n = 0
 
 fig, ax = plt.subplots(figsize = (3.35, 2.15), dpi=600, constrained_layout = True)
 
-
 ax.plot(xma[n:], maEnergy[n:], 'k-')
-
-##ax.plot(x[n:], u[n:], 'r-')
-
 
 ax.set_xlabel(r'$t / T$')
 ax.set_ylabel(r'$\frac{\left< U \right> / L}{\varepsilon_0 E_0^2 a^2}$')
 
-
-
 ##plt.xscale('log')
 plt.grid()
 
-plt.savefig(plots+'/MA_energy_{}.svg'.format(ratio))
+plt.savefig(energy+'/MA_energy_{}_{}.svg'.format(er2, ratio))
 plt.close(fig)
 
 ##################################################################################################
 
+
+sys.exit()
+
+
+##################################################################################################
+
+
+fx = np.load(directory+"/FxIns_{}_{}.npy".format(er2, ratio))
+fy = np.load(directory+"/FyIns_{}_{}.npy".format(er2, ratio))
+tz = np.load(directory+"/TzIns_{}_{}.npy".format(er2, ratio))
+
+mafx = []
+mafy = []
+matz = []
+
+
+
+while (i < len(u) - period + 1):
+    window_fx = fx[i : i + period]
+    window_fx_average = sum(window_fx) / period
+    mafx.append(window_fx_average)
+    
+    window_fy = fy[i : i + period]
+    window_fy_average = sum(window_fy) / period
+    mafy.append(window_fy_average)
+
+    window_tz = tz[i : i + period]
+    window_tz_average = sum(window_tz) / period
+    matz.append(window_tz_average)
+
+    
+    i += step
+###################################
 
 
 ##################################################################################################
 
 fig, ax = plt.subplots(figsize = (3.35, 2.15), dpi=600, constrained_layout = True)
 
-
 ax.plot(xma[n:], mafx[n:], 'k-')
 ax.plot(xma[n:], mafy[n:], 'r-')
 ax.plot(xma[n:], matz[n:], 'b-')
 
-
 ax.set_xlabel(r'$t / T$')
-
 
 plt.legend([r'$\frac{\left< F_x \right> / L}{\lambda \varepsilon_0 E_0^2}$',
             r'$\frac{\left< F_y \right> / L}{\lambda \varepsilon_0 E_0^2}$',
@@ -133,7 +136,7 @@ plt.legend([r'$\frac{\left< F_x \right> / L}{\lambda \varepsilon_0 E_0^2}$',
 ##plt.xscale('log')
 plt.grid()
 
-plt.savefig(plots+'/MA_Force_{}.svg'.format(ratio))
+plt.savefig(force+'/MA_Force_{}_{}.svg'.format(er2, ratio))
 plt.close(fig)
 
 ##################################################################################################

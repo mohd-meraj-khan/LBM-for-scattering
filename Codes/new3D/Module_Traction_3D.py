@@ -58,7 +58,7 @@ def fxAverage(Ex, Ey, Ez, Hx, Hy, Hz, er1, mur1, nx, ny, nz):
     Txz = 0.5 * np.real(er1 * (Ex*Ez_) + mur1 * (Hx*Hz_))
 
     fx = Txx * nx + Txy * ny + Txz * nz
-    
+
     return fx
 
 

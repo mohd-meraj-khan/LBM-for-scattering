@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
 from scipy.integrate import simpson
 
@@ -17,18 +15,20 @@ from Module_Parameters_2D import *
 directory = 'data/total_field'
 
 
+force = 'data'
+if not os.path.exists(force):
+    os.makedirs(force)
 
 
 
 
+Ex = np.load(directory+'/ExTot_{}_{}.npy'.format(er2, ratio))
+Ey = np.load(directory+'/EyTot_{}_{}.npy'.format(er2, ratio))
+Ez = np.load(directory+'/EzTot_{}_{}.npy'.format(er2, ratio))
 
-Ex = np.load(directory+'/ExTot_{}.npy'.format(ratio))
-Ey = np.load(directory+'/EyTot_{}.npy'.format(ratio))
-Ez = np.load(directory+'/EzTot_{}.npy'.format(ratio))
-
-Hx = np.load(directory+'/HxTot_{}.npy'.format(ratio))
-Hy = np.load(directory+'/HyTot_{}.npy'.format(ratio))
-Hz = np.load(directory+'/HzTot_{}.npy'.format(ratio))
+Hx = np.load(directory+'/HxTot_{}_{}.npy'.format(er2, ratio))
+Hy = np.load(directory+'/HyTot_{}_{}.npy'.format(er2, ratio))
+Hz = np.load(directory+'/HzTot_{}_{}.npy'.format(er2, ratio))
 
 
 
@@ -74,9 +74,30 @@ Tz = (simpson(tzTop) + simpson(tzRight) + simpson(tzBottom) + simpson(tzLeft)) /
 
 
 
-print(Fx)
-print(Fy)
-print(Tz)
+print(f'Fx: {Fx}')
+print(f'Fy: {Fy}')
+print(f'Tz: {Tz}')
+
+Fx_avg = []
+Fy_avg = []
+Tz_avg = []
+
+Fx_avg.append(Fx)
+Fy_avg.append(Fy)
+Tz_avg.append(Tz)
+
+fx = open(force+"/Fx_er_{}.txt".format(er2), "a")
+np.savetxt(fx, Fx_avg)
+fx.close()
+
+fy = open(force+"/Fy_er_{}.txt".format(er2), "a")
+np.savetxt(fy, Fy_avg)
+fy.close()
+
+fz = open(force+"/Tz_er_{}.txt".format(er2), "a")
+np.savetxt(fz, Tz_avg)
+fz.close()
+
 
 
 

@@ -9,7 +9,7 @@ def carToSpherical(Nz=1, Ny=1, Nx=1, cz=0, cy=0, cx=0):
     y = np.arange(Ny)
     z = np.arange(Nz)
 
-    Z, Y, X = np.meshgrid(z, y, x, indexing='ij')
+    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
 
     # shift coordinates
     X_shifted, Y_shifted, Z_shifted = X -cx, Y - cy, Z - cz
@@ -26,8 +26,9 @@ def carToSpherical(Nz=1, Ny=1, Nx=1, cz=0, cy=0, cx=0):
 
 #################################################################
 
-def sphere(r, a):
-    return r <= a
+def sphere(r, er, er2, a):
+    mask = r <= a
+    er[mask] = er2
 
 #################################################################
 
@@ -130,6 +131,37 @@ def JanusHalf(r, a, theta, Ny=10, Nx=10, cy=0, cx=0):
     return first_half, second_half
 #################################################################
 
+
+
+
+#################################################################
+
+##def JanusHalf(r, er, a, theta, er2, er3, Ny=10, Nx=10, cy=0, cx=0):
+##    for i in range(Ny):
+##        for j in range(Nx):
+##            Y = i - cy
+##            X = j - cx
+##            if (theta == 0 or theta == 360):
+##                if (r[i, j] <= a and X <= 0):
+##                    er[i, j]  = er2
+##                elif (r[i, j] <= a and X > 0):
+##                    er[i, j]  = er3
+##            elif (theta == 180):
+##                if (r[i, j] <= a and X >= 0):
+##                    er[i, j]  = er2
+##                elif (r[i, j] <= a and X < 0):
+##                    er[i, j]  = er3
+##            elif (0 < theta < 180):
+##                if (r[i, j] <= a and Y >= X * np.tan(np.pi/2 - theta * np.pi/180)):
+##                    er[i, j]  = er2
+##                elif (r[i, j] <= a and Y < X * np.tan(np.pi/2 - theta * np.pi/180)):
+##                    er[i, j]  = er3
+##            elif (180 < theta < 360):
+##                if (r[i, j] <= a and Y <= X * np.tan(3*np.pi/2 - theta * np.pi/180)):
+##                    er[i, j]  = er2
+##                elif (r[i, j] <= a and Y > X * np.tan(3*np.pi/2 - theta * np.pi/180)):
+##                    er[i, j]  = er3
+#################################################################
 
 
 

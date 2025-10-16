@@ -26,7 +26,7 @@ print(f'ratio : {ratio}')
 print(f'Number of parallel threads :{N}')
 print(f'Number of time steps :{Time}')
 
-print(f"Size of the computational domain: {Ny} * {Ny} * {Nx}\n\n")
+print(f"Size of the computational domain: {Ny} * {Nx}\n\n")
 
 print(f"Radius of the cylinder: {a}.\n")
 print(f"Wavelength of the incident wave: {wavelength:.2f}.\n\n")
@@ -96,7 +96,7 @@ for t in range(int(Time)):
 
     '''initialization of macroscopic fields'''
     myclib.initializeField(ExI, EyI, EzI, HxI, HyI, HzI, Nz, Ny, Nx, N)
-    myclib.initializeField(Ex,  Ey,  Ez,  Hx,  Hy,  Hz,  Nz, Ny, Nx, N)
+    myclib.initializeField(Ex, Ey, Ez, Hx, Hy, Hz, Nz, Ny, Nx, N)
 
     '''computation of macroscopic fields from distribution function'''
     myclib.macroField(exI, erI, ExI, Nz, Ny, Nx, Q, N)
@@ -119,8 +119,8 @@ for t in range(int(Time)):
         
             
     '''source wave'''
-    planeWaveTM(ExI, HyI, t, omega, zloc, ymin, ymax, xmin, xmax)
-    planeWaveTM(Ex,  Hy,  t, omega, zloc, ymin, ymax, xmin, xmax)
+    planeWaveTM(EzI, HyI, t, omega, xloc, ymin, ymax, zmin, zmax)
+    planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax, zmin, zmax)
 
     '''calculation of scattered fields'''
     Ex_scat = Ex - ExI
@@ -138,8 +138,8 @@ for t in range(int(Time)):
 
 
     '''collision and streaming (the 2 steps of LBM) when field is forced'''
-    myclib.collForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Nz, Ny, Nx, Q, zloc, ymin, ymax, xmin, xmax, N)
-    myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Nz, Ny, Nx, Q, zloc, ymin, ymax, xmin, xmax, N)
+    myclib.collForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Nz, Ny, Nx, Q, xloc, ymin, ymax, zmin, zmax, N)
+    myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Nz, Ny, Nx, Q, xloc, ymin, ymax, zmin, zmax, N)
     myclib.streaming(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, Nz, Ny, Nx, Q, N)
     myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Nz, Ny, Nx, Q, N)
 
@@ -214,7 +214,7 @@ file_path = os.path.join(directory_info, file_name)
 
 
 '''computatio speed'''
-# domain size Nz*Ny*Nx
+# domain size Ny*Nx
 # 6 fields (3 E fields and 3 H fields)
 # 2 (scattered and total)
 lattice_sites = 2 * 6 * Nz * Ny * Nx

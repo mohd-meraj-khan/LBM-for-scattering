@@ -31,19 +31,23 @@ print("Number of time steps :", int(Time))
 def initialize_field(Nz=10, Ny=10, Nx=10):
     return np.zeros((Nz, Ny, Nx), dtype=np.float32, order='C')
 
+ExI, EyI, EzI, HxI, HyI, HzI = [initialize_field(Nz, Ny, Nx) for _ in range(6)]
 Ex, Ey, Ez, Hx, Hy, Hz = [initialize_field(Nz, Ny, Nx) for _ in range(6)]
+Ex_scat, Ey_scat, Ez_scat, Hx_scat, Hy_scat, Hz_scat = [initialize_field(Nz, Ny, Nx) for _ in range(6)]
 
 
 '''initializing the distribution functions of electric and magnetic fields'''
 def initilize_dis_func(Nz=10, Ny=10, Nx=10, Q=7):
     return np.zeros((Nz, Ny, Nx, Q), dtype=np.float32, order='C')
 
+exI, eyI, ezI, hxI, hyI, hzI = [initilize_dis_func(Nz, Ny, Nx, Q) for _ in range(6)]
+exbI, eybI, ezbI, hxbI, hybI, hzbI = [initilize_dis_func(Nz, Ny, Nx, Q) for _ in range(6)]
 ex, ey, ez, hx, hy, hz = [initilize_dis_func(Nz, Ny, Nx, Q) for _ in range(6)]
 exb, eyb, ezb, hxb, hyb, hzb = [initilize_dis_func(Nz, Ny, Nx, Q) for _ in range(6)]
 
+'''initializing the material properties for incident fields'''
+erI, murI = initialize_material_properties(er1, mur1, Nz, Ny, Nx)
 ###############################################################################################################
-
-
 
 
 
@@ -54,17 +58,17 @@ exb, eyb, ezb, hxb, hyb, hzb = [initilize_dis_func(Nz, Ny, Nx, Q) for _ in range
 t1 = time.time()
 
 
-fig = plt.figure(figsize = (3.35*3, 3.35*1), dpi=600)
-gs=GridSpec(1,3)
+fig = plt.figure(figsize = (3.35*3, 3.35*2), dpi=600)
+gs=GridSpec(2,3)
 plt.ion()
 
-fps = 30
+fps = 10
 
-Video_Name = "Ez_tot.mp4"
+Video_Name = "EzTotScat.mp4"
 
 FFMpegWriter = animation.writers['ffmpeg']
 
-metadata = dict(title='Ez_tot', artist='', comment='Movie support!')
+metadata = dict(title='Ez', artist='', comment='Movie support!')
 writer = FFMpegWriter(fps=fps, metadata=metadata)
 
 with writer.saving(fig, Video_Name,300):
@@ -77,9 +81,19 @@ with writer.saving(fig, Video_Name,300):
         #################################################################################################################
 
         '''initialization of macroscopic fields'''
+        myclib.initializeField(ExI, EyI, EzI, HxI, HyI, HzI, Nz, Ny, Nx, N)
         myclib.initializeField(Ex, Ey, Ez, Hx, Hy, Hz, Nz, Ny, Nx, N)
 
         '''computation of macroscopic fields from distribution function'''
+        myclib.macroField(exI, erI, ExI, Nz, Ny, Nx, Q, N)
+        myclib.macroField(eyI, erI, EyI, Nz, Ny, Nx, Q, N)
+        myclib.macroField(ezI, erI, EzI, Nz, Ny, Nx, Q, N)
+
+        myclib.macroField(hxI, murI, HxI, Nz, Ny, Nx, Q, N)
+        myclib.macroField(hyI, murI, HyI, Nz, Ny, Nx, Q, N)
+        myclib.macroField(hzI, murI, HzI, Nz, Ny, Nx, Q, N)
+
+
         myclib.macroField(ex, er, Ex, Nz, Ny, Nx, Q, N)
         myclib.macroField(ey, er, Ey, Nz, Ny, Nx, Q, N)
         myclib.macroField(ez, er, Ez, Nz, Ny, Nx, Q, N)
@@ -88,21 +102,37 @@ with writer.saving(fig, Video_Name,300):
         myclib.macroField(hy, mur, Hy, Nz, Ny, Nx, Q, N)
         myclib.macroField(hz, mur, Hz, Nz, Ny, Nx, Q, N)
 
-        
+
         if (t >= 0):
             
             '''source wave'''
+            planeWaveTM(EzI, HyI, t, omega, xloc, ymin, ymax, zmin, zmax)
             planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax, zmin, zmax)
 
+            '''calculation of scattered fields'''
+            Ez_scat = Ez - EzI
+            Hx_scat = Hx - HxI
+            Hy_scat = Hy - HyI
+
+##            Ez_scat[scatterer] = 0
+##            Hx_scat[scatterer] = 0
+##            Hy_scat[scatterer] = 0
+
             '''collision and streaming (the 2 steps of LBM) when field is forced'''
+            myclib.collForcingNode(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Nz, Ny, Nx, Q, xloc, ymin, ymax, zmin, zmax, N)
             myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Nz, Ny, Nx, Q, xloc, ymin, ymax, zmin, zmax, N)
+            myclib.streaming(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, Nz, Ny, Nx, Q, N)
             myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Nz, Ny, Nx, Q, N)
-        else:    
+
+        else:     
             '''collision and streaming (the 2 steps of LBM) when field is not forced'''
+            myclib.collision(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, ExI, EyI, EzI, HxI, HyI, HzI, erI, murI, Nz, Ny, Nx, Q, N)
             myclib.collision(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Nz, Ny, Nx, Q, N)
+            myclib.streaming(exI, eyI, ezI, hxI, hyI, hzI, exbI, eybI, ezbI, hxbI, hybI, hzbI, Nz, Ny, Nx, Q, N)
             myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Nz, Ny, Nx, Q, N)
-                
         ###############################################################################################################
+
+
 
 
         
@@ -111,7 +141,7 @@ with writer.saving(fig, Video_Name,300):
     ##########                                           ANIMATION                                       ##########
     ###############################################################################################################
 
-        if (t%1 == 0):
+        if (t%10 == 0):
                 
             fig.clear()
 
@@ -166,13 +196,59 @@ with writer.saving(fig, Video_Name,300):
             ax3.set_ylabel(r'$z$', fontsize=12)
 
 
-##            plt.colorbar(im1, location='right', shrink=0.97, aspect=20)
+
+
+
+            ax4 = fig.add_subplot(gs[1,0])
+            plt.title(r'$E_z^{scat}$')
+            im4 = plt.imshow(Ez_scat[Nz//2, :, :], vmin = -1, vmax = 1, cmap='seismic', origin='lower')
+            im = plt.imshow(er[Nz//2, :, :], extent=(0, Nx, 0, Ny), cmap='binary', origin='lower', alpha=0.1)
+            
+            ax4.set_xticks(np.linspace(0,Nx,4))
+            ax4.set_xticklabels([])
+            ax4.set_xlabel(r'$x$', fontsize=12)
+            ax4.set_yticks(np.linspace(0,Ny,4))
+            ax4.set_yticklabels([])
+            ax4.set_ylabel(r'$y$', fontsize=12)
+
+
+            ax5 = fig.add_subplot(gs[1,1])
+            plt.title(r'$E_z^{scat}$')
+            im5 = plt.imshow(Ez_scat[:, :, Nx//2], vmin = -1, vmax = 1, cmap='seismic', origin='lower')
+            im = plt.imshow(er[:, :, Nx//2], extent=(0, Nx, 0, Ny), cmap='binary', origin='lower', alpha=0.1)
+            
+            ax5.set_xticks(np.linspace(0,Nx,4))
+            ax5.set_xticklabels([])
+            ax5.set_xlabel(r'$y$', fontsize=12)
+            ax5.set_yticks(np.linspace(0,Ny,4))
+            ax5.set_yticklabels([])
+            ax5.set_ylabel(r'$z$', fontsize=12)
+
+
+
+            ax6 = fig.add_subplot(gs[1,2])
+            plt.title(r'$E_z^{scat}$')
+            im6 = plt.imshow(Ez_scat[:, Ny//2, :], vmin = -1, vmax = 1, cmap='seismic', origin='lower')
+            im = plt.imshow(er[:, Ny//2, :], extent=(0, Nx, 0, Ny), cmap='binary', origin='lower', alpha=0.1)
+            
+            ax6.set_xticks(np.linspace(0,Nx,4))
+            ax6.set_xticklabels([])
+            ax6.set_xlabel(r'$x$', fontsize=12)
+            ax6.set_yticks(np.linspace(0,Ny,4))
+            ax6.set_yticklabels([])
+            ax6.set_ylabel(r'$z$', fontsize=12)
+
+
+
+
+
+
+
+
+##            plt.colorbar(im2, location='right', shrink=0.97, aspect=20)
        
 ##            plt.savefig(pictures+"/pic."+str(t).zfill(4)+".png")
-            writer.grab_frame()
-
-
-
+            writer.grab_frame()     
 
     ###############################################################################################################
     ###############################################################################################################

@@ -3,23 +3,50 @@ import time
 import numpy as np
 from Module_Geometry_3D import *
 
-
+import time
 
 '''number of parallel threads'''
-N = 4
+N = 10
 
 
 '''Accessing command line arguments'''
 parameters = sys.argv
 
-theta = 45
+
+phi0 = 0
+
 ######################
 
-a, ratio = 25, 0.5   # ratio = a / wavelength
-n = 4
+ratio = 5
+er2 = 2
+
+
+er1, mur1 = 1, 1   # material properties i.e. permittivity and permeabilty
+
+mur2 = 1
+
+V1 = 1 / (3 * np.sqrt(er1*mur1))
+V2 = 1 / (3 * np.sqrt(er2*mur2))
+
+
+A = 30
+
+if (ratio <= 1 * V2 / V1):
+    a = A
+else:
+    a = int(np.round(A * ratio * V1 / V2))
+
+
+
+
+if (ratio < 1):
+    n = 10
+else:
+    n = 3
+
+
 Nx, Ny, Nz = n*a, n*a, n*a  # size of the computational domain
 
-er1, mur1, er2, er3 = 1, 1, 4, 10000   # material properties i.e. permittivity and permeabilty
 
 
 ################################################################
@@ -29,7 +56,7 @@ er1, mur1, er2, er3 = 1, 1, 4, 10000   # material properties i.e. permittivity a
 '''initilizing the polar coordinates'''
 def initialize_field(Nz=10, Ny=10, Nx=10):
     return np.zeros((Nz, Ny, Nx), dtype=np.float32, order='C')
-r, theta, phi = [initialize_field(Nz, Ny, Nx) for _ in range(3)]
+rad, the, phi = [initialize_field(Nz, Ny, Nx) for _ in range(3)]
 
 
 '''initilizing the domain properties'''
@@ -46,10 +73,12 @@ cy = Ny//2 + 0.5
 cz = Nz//2 + 0.5
 
 '''converting from cartesian to spherical coordinates'''
-r, theta, phi = carToSpherical(Nz, Ny, Nx, cz, cy, cx)
+rad, the, phi = carToSpherical(Nz, Ny, Nx, cz, cy, cx)
 
 '''scatterer particle'''
-sphere(r, er, er2, a)
+scatterer = sphere(rad, a)
+
+er[scatterer] = er2
 
 
 
@@ -75,38 +104,83 @@ k = 2*np.pi / wavelength
 
 #############################
 # boundary of EM wave source
-xloc = 0
+zloc = 0
 ymin = 0
 ymax = Ny
-zmin = 0
-zmax = Nz
+xmin = 0
+xmax = Nx
 #############################
 
 
 
 '''half-width of the square bounding box'''
-w = int(np.round(1.5*a))
+w = int(np.round(1.25*a))
 
 '''box surrounding the scatterer'''
-Top    = np.arange(int(cz - w), int(cz + w)), int(cy + w), np.arange(int(cx - w), int(cx + w))
-Bottom = np.arange(int(cz - w), int(cz + w)), int(cy - w), np.arange(int(cx - w), int(cx + w))
-Right  = np.arange(int(cz - w), int(cz + w)), np.arange(int(cy - w), int(cy + w)), int(cx + w)
-Left   = np.arange(int(cz - w), int(cz + w)), np.arange(int(cy - w), int(cy + w)), int(cx - w)
-Front  = int(cz + w), np.arange(int(cy - w), int(cy + w)), np.arange(int(cx - w), int(cx + w))
-Back   = int(cz - w), np.arange(int(cy - w), int(cy + w)), np.arange(int(cx - w), int(cx + w))
-
-'''unit normal vectors at the perimeter of the bounding box'''
-nxTop, nxBottom, nxRight, nxLeft, nxFront, nxBack = 0, 0, 1, -1, 0, 0
-nyTop, nyBottom, nyRight, nyLeft, nyFront, nyBack = 1, -1, 0, 0, 0, 0
-nzTop, nzBottom, nzRight, nzLeft, nzFront, nzBack = 0, 0, 0, 0, 1, -1
+Top = (int(cz + w), slice(int(cy - w), int(cy + w)), slice(int(cx - w), int(cx + w)))
+Bot = (int(cz - w), slice(int(cy - w), int(cy + w)), slice(int(cx - w), int(cx + w)))
+Ryt = (slice(int(cz - w), int(cz + w)), int(cy + w), slice(int(cx - w), int(cx + w)))
+Lef = (slice(int(cz - w), int(cz + w)), int(cy - w), slice(int(cx - w), int(cx + w)))
+Frt = (slice(int(cz - w), int(cz + w)), slice(int(cy - w), int(cy + w)), int(cx + w))
+Bak = (slice(int(cz - w), int(cz + w)), slice(int(cy - w), int(cy + w)), int(cx - w))
 
 
-
+'''unit normal vectors at the surface of the bounding box'''
+nxTop, nxBot, nxRyt, nxLef, nxFrt, nxBak = 0, 0, 0, 0, 1, -1
+nyTop, nyBot, nyRyt, nyLef, nyFrt, nyBak = 0, 0, 1, -1, 0, 0
+nzTop, nzBot, nzRyt, nzLef, nzFrt, nzBak = 1, -1, 0, 0, 0, 0
 
 
 
+'''x, y and z coordinates at the surface of the bounding box to compute torque'''
+x_id_top = np.arange(int(cx-w), int(cx+w))
+x_id_bot = np.arange(int(cx-w), int(cx+w))
+y_id_top = np.arange(int(cy-w), int(cy+w))
+y_id_bot = np.arange(int(cy-w), int(cy+w))
 
-noOfPeriods = 0
+x_id_ryt = np.arange(int(cx-w), int(cx+w))
+x_id_lef = np.arange(int(cx-w), int(cx+w))
+z_id_ryt = np.arange(int(cz-w), int(cz+w))
+z_id_lef = np.arange(int(cz-w), int(cz+w))
+
+y_id_frt = np.arange(int(cy-w), int(cy+w))
+y_id_bak = np.arange(int(cy-w), int(cy+w))
+z_id_frt = np.arange(int(cz-w), int(cz+w))
+z_id_bak = np.arange(int(cz-w), int(cz+w))
+
+X_top, Y_top = np.meshgrid(x_id_top, y_id_top, indexing='xy')
+X_bot, Y_bot = np.meshgrid(x_id_bot, y_id_bot, indexing='xy')
+
+Z_top = int(cz + w)
+Z_bot = int(cz - w)
+
+X_ryt, Z_ryt = np.meshgrid(x_id_ryt, z_id_ryt, indexing='xy')
+X_lef, Z_lef = np.meshgrid(x_id_lef, z_id_lef, indexing='xy')
+
+Y_ryt = int(cy + w)
+Y_lef = int(cy - w)
+
+Y_frt, Z_frt = np.meshgrid(y_id_frt, z_id_frt, indexing='xy')
+Y_bak, Z_bak = np.meshgrid(y_id_bak, z_id_bak, indexing='xy')
+
+X_frt = int(cx + w)
+X_bak = int(cx - w)
+
+
+
+
+
+
+
+
+
+if (ratio < 1):
+    noOfPeriods = 5
+else:
+    noOfPeriods = 20
+
+
+
 noOfReflections = 0
 
 

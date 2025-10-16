@@ -13,23 +13,32 @@ N = 12
 parameters = sys.argv
 
 
+##ratio = float(parameters[1])
+
+ratio = 1
 ######################
 
-a, ratio = 25, 0.5   # ratio = a / wavelength
+er2 = 10
 
-'''size of the computational domain'''
-n = 6
-Nx, Ny = n*a, n*a
+er1, mur1 = 1, 1   # material properties i.e. permittivity and permeabilty
 
-'''material properties'''
-er1, mur1 = 1, 1   
-
-er2 = 2
 mur2 = 1
-
 
 V1 = 1 / (3 * np.sqrt(er1*mur1))
 V2 = 1 / (3 * np.sqrt(er2*mur2))
+
+
+A = 25
+
+if (ratio <= 1 * V2 / V1):
+    a = A
+else:
+    a = int(np.round(A * ratio * V1 / V2))
+
+
+
+n = 4
+Nx, Ny = n*a, n*a  # size of the computational domain
 
 ################################################################
 ###                        SCATTERER                        ####

@@ -22,7 +22,10 @@ print(f'ratio : {ratio}')
 print(f'Number of parallel threads :{N}')
 print(f'Number of time steps :{Time}')
 
-print(f"Size of the computational domain: {Ny} * {Nx}\n")
+print(f"Size of the computational domain: {Ny} * {Nx}\n\n")
+
+print(f"Radius of the cylinder: {a}.\n")
+print(f"Wavelength of the incident wave: {wavelength:.2f}.\n\n")
 
 
 
@@ -99,10 +102,24 @@ with writer.saving(fig, Video_Name,300):
             '''source wave'''
             planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax)
 
+
+            '''electric field is zero inside PEC'''
+##            Ex[scatterer] = 0
+##            Ey[scatterer] = 0
+##            Ez[scatterer] = 0
+    
+
             '''collision and streaming (the 2 steps of LBM) when field is forced'''
             myclib.collForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, xloc, ymin, ymax, N)
             myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q, N)
-        else:        
+        else:
+
+            '''electric field is zero inside PEC'''
+##            Ex[scatterer] = 0
+##            Ey[scatterer] = 0
+##            Ez[scatterer] = 0
+
+            
             '''collision and streaming (the 2 steps of LBM) when field is not forced'''
             myclib.collNotForcingNode(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ex, Ey, Ez, Hx, Hy, Hz, er, mur, Ny, Nx, Q, N)
             myclib.streaming(ex, ey, ez, hx, hy, hz, exb, eyb, ezb, hxb, hyb, hzb, Ny, Nx, Q, N)
@@ -167,3 +184,112 @@ t3 = time.time()
 total_time = (t3 - t0) / 60
 print(f"\nTotal time taken: {total_time:.2f} minutes")
 ###############################################################################################################
+
+
+
+
+
+
+
+
+directory_info = 'data/information'
+if not os.path.exists(directory_info):
+    os.makedirs(directory_info)
+
+    
+file_name = "info_{}_{}.txt".format(er2, ratio)
+file_path = os.path.join(directory_info, file_name)
+
+
+
+'''computatio speed'''
+# domain size Ny*Nx
+# 6 fields (3 E fields and 3 H fields)
+lattice_sites = 6 * Ny * Nx
+time_steps = Time
+
+mlups = lattice_sites * time_steps / ((t3 - t0) * 1e6)
+
+
+import platform
+import os
+import subprocess
+
+# Parse CPU information from /proc/cpuinfo
+cpu_info = []
+cache_size = []
+with open("/proc/cpuinfo", "r") as file:
+    for line in file:
+        if line.strip():
+            key, _, value = line.partition(":")
+            if key.strip() == "model name":
+                cpu_info.append(value.strip())
+            if key.strip() == "cache size":
+                cache_size.append(value.strip())
+
+
+# Parse RAM information from /proc/meminfo
+with open("/proc/meminfo", "r") as file:
+    mem_info = {}
+    for line in file:
+        key, _, value = line.partition(":")
+        mem_info[key.strip()] = value.strip()
+
+# Get total and available memory in GB
+total_memory = int(mem_info["MemTotal"].split()[0]) / 1024 / 1024  # Convert kB to GB
+available_memory = int(mem_info["MemAvailable"].split()[0]) / 1024 / 1024  # Convert kB to GB
+
+
+
+with open(file_path, "w") as file:
+    file.write(f"Radius of the cylinder: {a}.\n")
+    
+    if (er2 > 1):
+        file.write(f"Wavelength inside the scatterer: {wavelength * V2 / V1:.2f}.\n")
+        
+    file.write(f"Wavelength of the incident wave: {wavelength:.2f}.\n\n")
+    
+    file.write(f"Size of the computational domain: {Ny} * {Nx}.\n")
+    file.write(f"Number of time steps: {Time}.\n\n")
+
+    
+    file.write(f"Number of parallel threads: {N}.\n")
+    file.write(f"Total time taken: {t3 - t0:.2f} seconds.\n\n")
+    file.write(f"Computation speed in MLUPS: {mlups:.2f}.\n\n")
+
+    # CPU information
+    file.write(f"CPU Model: {cpu_info[0]}\n")  # First processor
+    file.write(f"Total logical cores: {len(cpu_info)}\n")
+    file.write(f"Cache Size: {cache_size[0]}\n")  # Cache size of the first processor
+
+    # system memory
+    file.write(f"Total Memory: {total_memory:.2f} GB\n")
+    file.write(f"Available Memory: {available_memory:.2f} GB\n\n")
+
+
+    # python version
+    file.write(f"Python Version: {platform.python_version()}\n")
+
+    # Get GCC version
+    try:
+        gcc_version = subprocess.check_output(["gcc", "--version"], universal_newlines=True)
+        gcc_version_line = gcc_version.splitlines()[0]
+        file.write(f"GCC Version: {gcc_version_line}\n\n")
+    except FileNotFoundError:
+        file.write("GCC Compiler not found. Please install GCC to retrieve its version.\n\n")
+
+
+    # Operating System
+    file.write(f"Operating System: {platform.system()}\n")
+    file.write(f"OS Version: {platform.version()}\n")
+    file.write(f"OS Release: {platform.release()}\n\n")
+
+    # Machine and Processor Info
+    file.write(f"Machine: {platform.machine()}\n")
+    file.write(f"Processor: {platform.processor()}\n")
+
+
+print(f"Computation speed in MLUPS: {mlups:.2f}\n")
+
+print('\n--------------------------------------------------------------------\n')
+

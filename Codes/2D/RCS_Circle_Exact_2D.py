@@ -3,29 +3,23 @@ import numpy as np
 import sys
 import os
 
-from scipy.interpolate import RectBivariateSpline
-
 import math
 import scipy.special as sc
 from math import e
 import cmath
+
 from Module_Parameters_2D import *
 
 
-directory = 'data/rcs'
+directory = 'data/exact'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
 
 
 
-
-
 r = 100
 
-er1 = 1
-mur1 = 1
-mur2 = 1
 
 v1 = 1 / (3 * np.sqrt(er1 * mur1))
 v2 = 1 / (3 * np.sqrt(er2 * mur2))
@@ -33,8 +27,9 @@ v2 = 1 / (3 * np.sqrt(er2 * mur2))
 alpha = np.sqrt((er1 * mur2) / (er2 * mur1))
 
 k1a = 2 * np.pi * ratio
-k2a = 2 * np.pi * v1 / v2 * ratio
 k1r = 2 * np.pi * ratio * r
+
+k2a = 2 * np.pi * v1 / v2 * ratio
 
 
 ########################################## BRCS ###################################
@@ -76,15 +71,14 @@ for i in range(len(phi)):
 
 ###################################
 
-np.save(directory+"/BRCS_exact_{}.npy".format(ratio), BRCS)
-##np.savetxt(rcs, BRCS)
-##rcs.close()
+np.save(directory+"/BRCS_exact_{}_{}.npy".format(er2, ratio), BRCS)
+
 
 ###################################################################################
 
 
 
-
+sys.exit()
 
 ########################################## MRCS ###################################
 

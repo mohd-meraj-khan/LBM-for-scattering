@@ -1,4 +1,4 @@
-from scipy.integrate import simpson, trapezoid
+from scipy.integrate import simps
 
 from Module_Traction_2D import *
 from Module_EM_Wave_2D import *
@@ -9,11 +9,17 @@ from Module_Shared_Lib_2D import *
 t0 = time.time()
 
 
-directory = 'data/total_field'
-if not os.path.exists(directory):
-    os.makedirs(directory)
+field = 'data/total_field'
+if not os.path.exists(field):
+    os.makedirs(field)
 
+force = 'data'
+if not os.path.exists(force):
+    os.makedirs(force)
 
+MA = 'data/moving_average'
+if not os.path.exists(MA):
+    os.makedirs(MA)
 
 
 print('\n')
@@ -21,7 +27,10 @@ print(f'ratio : {ratio}')
 print(f'Number of parallel threads :{N}')
 print(f'Number of time steps :{Time}')
 
-print(f"Size of the computational domain: {Ny} * {Nx}\n")
+print(f"Size of the computational domain: {Ny} * {Nx}\n\n")
+
+print(f"Radius of the cylinder: {a}.\n")
+print(f"Wavelength of the incident wave: {wavelength:.2f}.\n\n")
 
 
 
@@ -94,7 +103,6 @@ for t in range(Time):
     planeWaveTM(Ez, Hy, t, omega, xloc, ymin, ymax)
 
 
-
     '''electric field is zero inside PEC'''
 ##    Ex[scatterer] = 0
 ##    Ey[scatterer] = 0
@@ -128,9 +136,9 @@ for t in range(Time):
     tzBottom = - fxBottom * (Bottom[0] - cy) + fyBottom * (Bottom[1] - cx)
     tzLeft   = - fxLeft   * (Left[0] - cx)   + fyLeft   * (Left[1] - cy)
 
-    FxIns[t] = (simpson(fxTop)   + simpson(fxRight)   + simpson(fxBottom)   + simpson(fxLeft))   / (a / ratio)
-    FyIns[t] = (simpson(fyTop)   + simpson(fyRight)   + simpson(fyBottom)   + simpson(fyLeft))   / (a / ratio)
-    TzIns[t] = (trapezoid(tzTop) + trapezoid(tzRight) + trapezoid(tzBottom) + trapezoid(tzLeft)) / (a / ratio)**2
+    FxIns[t] = (simps(fxTop) + simps(fxRight) + simps(fxBottom) + simps(fxLeft)) / (a / ratio)
+    FyIns[t] = (simps(fyTop) + simps(fyRight) + simps(fyBottom) + simps(fyLeft)) / (a / ratio)
+    TzIns[t] = (simps(tzTop) + simps(tzRight) + simps(tzBottom) + simps(tzLeft)) / (a / ratio)**2
 
     
     
@@ -172,9 +180,10 @@ tzRight  = - fxRight  * (Right[0] - cx)  + fyRight  * (Right[1] - cy)
 tzBottom = - fxBottom * (Bottom[0] - cy) + fyBottom * (Bottom[1] - cx)
 tzLeft   = - fxLeft   * (Left[0] - cx)   + fyLeft   * (Left[1] - cy)
 
-Fx = (simpson(fxTop)   + simpson(fxRight)   + simpson(fxBottom)   + simpson(fxLeft))   / (a / ratio)
-Fy = (simpson(fyTop)   + simpson(fyRight)   + simpson(fyBottom)   + simpson(fyLeft))   / (a / ratio)
-Tz = (trapezoid(tzTop) + trapezoid(tzRight) + trapezoid(tzBottom) + trapezoid(tzLeft)) / (a / ratio)**2
+
+Fx = (simps(fxTop) + simps(fxRight) + simps(fxBottom) + simps(fxLeft)) / (a / ratio)
+Fy = (simps(fyTop) + simps(fyRight) + simps(fyBottom) + simps(fyLeft)) / (a / ratio)
+Tz = (simps(tzTop) + simps(tzRight) + simps(tzBottom) + simps(tzLeft)) / (a / ratio)**2
 
 
 
@@ -183,32 +192,50 @@ total_time = (t3 - t0) / 60
 print(f"\nTotal time taken: {total_time:.2f} minutes\n")
 ###############################################################################################################
 
-print(Fx)
-print(Fy)
-print(Tz)
+print(f'Fx: {Fx}')
+print(f'Fy: {Fy}')
+print(f'Tz: {Tz}')
+
+Fx_avg = []
+Fy_avg = []
+Tz_avg = []
+
+Fx_avg.append(Fx)
+Fy_avg.append(Fy)
+Tz_avg.append(Tz)
+
+fx = open(force+"/Fx_er_{}.txt".format(er2), "a")
+np.savetxt(fx, Fx_avg)
+fx.close()
+
+fy = open(force+"/Fy_er_{}.txt".format(er2), "a")
+np.savetxt(fy, Fy_avg)
+fy.close()
+
+fz = open(force+"/Tz_er_{}.txt".format(er2), "a")
+np.savetxt(fz, Tz_avg)
+fz.close()
 
 
 
+np.save(field+"/ExTot_{}_{}.npy".format(er2, ratio), Ex_phasor)
+np.save(field+"/EyTot_{}_{}.npy".format(er2, ratio), Ey_phasor)
+np.save(field+"/EzTot_{}_{}.npy".format(er2, ratio), Ez_phasor)
 
-
-np.save(directory+"/ExTot_{}.npy".format(ratio), Ex_phasor)
-np.save(directory+"/EyTot_{}.npy".format(ratio), Ey_phasor)
-np.save(directory+"/EzTot_{}.npy".format(ratio), Ez_phasor)
-
-np.save(directory+"/HxTot_{}.npy".format(ratio), Hx_phasor)
-np.save(directory+"/HyTot_{}.npy".format(ratio), Hy_phasor)
-np.save(directory+"/HzTot_{}.npy".format(ratio), Hz_phasor)
+np.save(field+"/HxTot_{}_{}.npy".format(er2, ratio), Hx_phasor)
+np.save(field+"/HyTot_{}_{}.npy".format(er2, ratio), Hy_phasor)
+np.save(field+"/HzTot_{}_{}.npy".format(er2, ratio), Hz_phasor)
 
 
 #####################
 
-np.save(directory+"/energy_{}.npy".format(ratio), U)
+np.save(MA+"/energy_{}_{}.npy".format(er2, ratio), U)
 
 #####################
 
-np.save(directory+"/FxIns_{}.npy".format(ratio), FxIns)
-np.save(directory+"/FyIns_{}.npy".format(ratio), FyIns)
-np.save(directory+"/TzIns_{}.npy".format(ratio), TzIns)
+np.save(MA+"/FxIns_{}_{}.npy".format(er2, ratio), FxIns)
+np.save(MA+"/FyIns_{}_{}.npy".format(er2, ratio), FyIns)
+np.save(MA+"/TzIns_{}_{}.npy".format(er2, ratio), TzIns)
 
 
 
@@ -219,7 +246,9 @@ np.save(directory+"/TzIns_{}.npy".format(ratio), TzIns)
 directory_info = 'data/information'
 if not os.path.exists(directory_info):
     os.makedirs(directory_info)
-file_name = "info_{}.txt".format(ratio)
+
+    
+file_name = "info_{}_{}.txt".format(er2, ratio)
 file_path = os.path.join(directory_info, file_name)
 
 

@@ -20,7 +20,7 @@ from Module_Parameters_3D import *
 
 
 
-directory = 'data/moving_average'
+directory = 'data'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
@@ -30,11 +30,11 @@ if not os.path.exists(plots):
 
 
 
-u  = np.load(directory+"/energy_{}_{}.npy".format(er2, ratio))
+u  = np.load(directory+"/energy_{}.npy".format(ratio))
 
-##fx = np.load(directory+"/FxIns_{}.npy".format(ratio))
-##fy = np.load(directory+"/FyIns_{}.npy".format(ratio))
-##tz = np.load(directory+"/TzIns_{}.npy".format(ratio))
+fx = np.load(directory+"/FxIns_{}.npy".format(ratio))
+fy = np.load(directory+"/FyIns_{}.npy".format(ratio))
+tz = np.load(directory+"/TzIns_{}.npy".format(ratio))
 
 
 maEnergy = []
@@ -61,17 +61,17 @@ while (i < len(u) - period + 1):
     window_u_average = sum(window_u) / period
     maEnergy.append(window_u_average / U)
 
-##    window_fx = fx[i : i + period]
-##    window_fx_average = sum(window_fx) / period
-##    mafx.append(window_fx_average)
-##    
-##    window_fy = fy[i : i + period]
-##    window_fy_average = sum(window_fy) / period
-##    mafy.append(window_fy_average)
-##
-##    window_tz = tz[i : i + period]
-##    window_tz_average = sum(window_tz) / period
-##    matz.append(window_tz_average)
+    window_fx = fx[i : i + period]
+    window_fx_average = sum(window_fx) / period
+    mafx.append(window_fx_average)
+    
+    window_fy = fy[i : i + period]
+    window_fy_average = sum(window_fy) / period
+    mafy.append(window_fy_average)
+
+    window_tz = tz[i : i + period]
+    window_tz_average = sum(window_tz) / period
+    matz.append(window_tz_average)
 
     
     i += step
@@ -121,7 +121,7 @@ plt.close(fig)
 
 ##################################################################################################
 
-sys.exit()
+
 
 ##################################################################################################
 
