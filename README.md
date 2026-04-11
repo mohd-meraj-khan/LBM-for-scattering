@@ -23,7 +23,7 @@ In this work, we apply the Lattice Boltzmann Method to electromagnetic scatterin
 
 ---
 
-### [**Lattice Boltzmann Method for Electromagnetic Wave Scattering**](https://arxiv.org/abs/2510.11042)
+### [**Lattice Boltzmann Method for Electromagnetic Wave Scattering**](https://kwnsfk27.r.eu-west-1.awstrack.me/L0/https:%2F%2Fauthors.elsevier.com%2Fc%2F1mvnG_Wcs4XTA/1/0102019d76556fa0-4f3f5a5f-eacc-488a-b007-d61ea83cf099-000000/mCnP2aAsjGDLBiALlkiy8pPEhhQ=473)
 *LBM as a numerical framework for broadband electromagnetic scattering.*
 
 This paper proposes the Lattice Boltzmann Method as an alternative numerical framework for electromagnetic scattering computations. LBM is benchmarked across one-, two-, and three-dimensional configurations, covering plane-wave reflection and refraction, scattering from circular and hexagonal cylinders, and spherical geometries. The results are compared with analytical and Discretized Mie-Formalism solutions, demonstrating the accuracy, stability, and versatility of LBM for broadband electromagnetic simulations.
