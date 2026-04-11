@@ -12,7 +12,12 @@ The solver is currently designed to compute radar cross-section (RCS) and radiat
 > [!NOTE]
 > If you have a research idea and are interested in collaborating, feel free to reach out to me at meraj@cacs.iitm.ac.in. I’d be happy to discuss potential opportunities!
 
+## 📘 Thesis
 
+
+### [**A Lattice Boltzmann Framework for Simulating Electromagnetic Scattering and Radiation Forces**](https://doi.org/10.5281/zenodo.19487120)
+
+A unified Lattice Boltzmann framework for electromagnetic scattering and radiation forces, validated against analytical and semi-analytical solutions. The method accurately captures near- and far-field behavior across Rayleigh to geometrical optics regimes. Extensions to composite Janus particles reveal complex force, torque, and motion dynamics. Suitable for parallel simulations on complex geometries.
 
 ## 🧩 Related Publications
 
